@@ -1,147 +1,231 @@
-@file:OptIn(ExperimentalLayout::class)
-
 package io.github.paulblessing.kh2randotracker
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.ScrollableColumn
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CornerSize
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Surface
-import androidx.compose.material.darkColors
+import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.gesture.tapGestureFilter
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.imageFromResource
-import androidx.compose.ui.input.mouse.MouseScrollUnit
-import androidx.compose.ui.input.mouse.mouseScrollFilter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
-import java.util.*
 
-@Composable fun MainWindow(state: TrackerState, onSelectHintsFile: () -> Unit) {
-  MaterialTheme(colors = darkColors()) {
-    Surface(modifier = Modifier.fillMaxSize()) {
-      if (state.hintsLoaded) {
-        ScrollableColumn {
-          FlowRow {
-            for (world in state.allImportantCheckLocations.filter { it.enabled }) {
-              TrackerImportantCheckLocation(world, state)
-            }
-          }
-
-          FlowRow {
-            for (importantCheck in state.unfoundImportantChecks.filterTo(TreeSet(compareBy { it.id })) { it.enabled }) {
-              ImportantCheckIndicator(importantCheck, state)
-            }
-          }
-        }
-      } else {
-        LoadHintsView(onSelectHintsFile)
+@Composable fun MainWindow(state: TrackerState) {
+  ScrollableColumn(verticalArrangement = Arrangement.SpaceEvenly) {
+    FlowRow {
+      for (locationState in state.importantCheckLocationStates.filter { it.enabled }) {
+        ImportantCheckLocationSection(locationState, state)
       }
     }
-  }
-}
 
-@Composable fun TrackerImportantCheckLocation(location: ImportantCheckLocation, state: TrackerState) {
-  Row(
-    Modifier.width(320.dp).border(1.dp, if (location.selected) Color.Blue else Color.Transparent),
-    verticalAlignment = Alignment.CenterVertically
-  ) {
-    Box(
-      Modifier.size(width = 64.dp, height = 64.dp)
-        .padding(horizontal = 8.dp, vertical = 8.dp)
-        .tapGestureFilter {
-          if (location == state.activeLocation) {
-            location.selected = false
-            state.activeLocation = null
-          } else {
-            state.activeLocation?.selected = false
-            location.selected = true
-            state.activeLocation = location
-          }
-        }
-        .mouseScrollFilter { event, _ ->
-          when (val delta = event.delta) {
-            is MouseScrollUnit.Line -> {
-              val adjustment = if (delta.value > 0.0f) -1 else 1
-              location.totalImportantChecks = (location.totalImportantChecks + adjustment).coerceIn(-1, 20)
-              true
-            }
-            is MouseScrollUnit.Page -> true
-          }
-        }
+    Row(
+      Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+      verticalAlignment = Alignment.CenterVertically
     ) {
-      Image(imageFromResource(location.imagePath))
-      ImportantCheckCounter(
-        showFoundChecks = false,
-        foundImportantChecks = location.foundImportantChecks,
-        totalImportantChecks = location.totalImportantChecks,
-        modifier = Modifier.align(Alignment.BottomEnd)
+      val lastRevealedAnsemReport = state.lastRevealedAnsemReport
+      if (lastRevealedAnsemReport == null) {
+        Spacer(Modifier.weight(1.0f))
+      } else {
+        Text(lastRevealedAnsemReport.hintText, Modifier.weight(1.0f))
+      }
+
+      ReportOrPageCounter(
+        found = state.foundImportantChecksConsideredImportantCount,
+        total = state.totalImportantChecksConsideredImportantCount
       )
     }
 
-    Image(
-      imageFromResource("images/VerticalBarWhite.png"),
-      Modifier.size(width = 2.dp, height = 64.dp),
-      contentScale = ContentScale.FillHeight
-    )
+    AvailableCheckRow(AnsemReport.values().toList(), state)
 
-    FlowRow {
-      for (foundCheck in location.foundImportantChecks) {
-        ImportantCheckIndicator(foundCheck, state)
+    val fires = listOf(Magic.Fire1, Magic.Fire2, Magic.Fire3)
+    val blizzards = listOf(Magic.Blizzard1, Magic.Blizzard2, Magic.Blizzard3)
+    val thunders = listOf(Magic.Thunder1, Magic.Thunder2, Magic.Thunder3)
+    AvailableCheckRow(DriveForm.values().toList() + fires + blizzards + thunders, state)
+
+    val cures = listOf(Magic.Cure1, Magic.Cure2, Magic.Cure3)
+    val reflects = listOf(Magic.Reflect1, Magic.Reflect2, Magic.Reflect3)
+    val magnets = listOf(Magic.Magnet1, Magic.Magnet2, Magic.Magnet3)
+    AvailableCheckRow(cures + reflects + magnets + Summon.values(), state)
+
+    AvailableCheckRow(TornPage.values().toList() + ImportantAbility.values() + PromiseCharm + Proof.values(), state)
+  }
+}
+
+@Composable fun ImportantCheckLocationSection(locationState: ImportantCheckLocationState, state: TrackerState) {
+  val location = locationState.location
+  val activeLocation = location == state.activeLocation
+  Box(Modifier.width(320.dp)) {
+    Row(verticalAlignment = Alignment.CenterVertically) {
+      ImportantCheckLocationIndicator(
+        locationState,
+        state,
+        width = 80.dp,
+        showFoundChecks = true,
+        onClick = {
+          if (activeLocation) {
+            state.activeLocation = null
+          } else {
+            if (locationState.progression == 0) {
+              locationState.progression = 1
+            }
+            state.activeLocation = location
+          }
+          state.activeLocation = if (activeLocation) null else location
+        },
+        onScrollWheel = { adjustment ->
+          val currentProgression = locationState.progression
+          // TODO: Use the progression images
+//          if (adjustment > 0 && currentProgression < location.progressionImages.size) {
+//            locationState.progression += adjustment
+//          } else if (adjustment < 0 && currentProgression > 0) {
+//            locationState.progression += adjustment
+//          }
+          if (adjustment > 0 && currentProgression == 0) {
+            locationState.progression = 1
+          } else if (adjustment < 0 && currentProgression == 1) {
+            locationState.progression = 0
+          }
+        }
+      )
+
+      Image(
+        imageFromResource("images/VerticalBarWhite.png"),
+        Modifier.size(width = 2.dp, height = 64.dp),
+        contentScale = ContentScale.FillHeight
+      )
+
+      FlowRow {
+        for (foundCheck in locationState.foundImportantChecks) {
+          when (foundCheck) {
+            is AnsemReport -> FoundAnsemReportIndicator(foundCheck, state)
+            is DriveForm -> FoundDriveFormIndicator(foundCheck, state)
+            else -> FoundOtherImportantCheckIndicator(foundCheck, state)
+          }
+        }
+      }
+    }
+
+    if (activeLocation) {
+      Box(
+        Modifier.matchParentSize().background(
+          MaterialTheme.colors.secondary.copy(alpha = 0.1f),
+          shape = RoundedCornerShape(CornerSize(16.dp))
+        )
+      )
+    }
+  }
+}
+
+@Composable private fun AvailableCheckRow(importantChecks: List<ImportantCheck>, state: TrackerState) {
+  Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
+    importantChecks.forEach { importantCheck ->
+      if (state.showImportantCheck(importantCheck)) {
+        when (importantCheck) {
+          is AnsemReport -> AvailableAnsemReportIndicator(importantCheck, state)
+          is DriveForm -> AvailableDriveFormIndicator(importantCheck, state)
+          else -> AvailableOtherImportantCheckIndicator(importantCheck, state)
+        }
       }
     }
   }
 }
 
-@Composable fun ImportantCheckIndicator(importantCheck: ImportantCheck, state: TrackerState) {
-  Box(
-    Modifier.size(width = 36.dp, height = 36.dp)
-      .clickable {
-        if (importantCheck in state.unfoundImportantChecks) {
-          state.activeLocation?.let { location ->
-            if (location.foundImportantChecks.size < 20) {
-              location.foundImportantChecks += importantCheck
-              state.unfoundImportantChecks -= importantCheck
+@Composable private fun AvailableAnsemReportIndicator(ansemReport: AnsemReport, state: TrackerState) {
+  val ansemReportState = state[ansemReport]
+  AnsemReportIndicator(
+    ansemReport = ansemReport,
+    imageAlpha = if (state.importantCheckHasBeenFound(ansemReport)) 0.25f else 1.0f,
+    failedAttemptCount = ansemReportState.failedAttempts,
+    onClick = {
+      state.attemptToAddImportantCheck(
+        ansemReport,
+        onAllowed = {
+          val hintedLocation = ansemReportState.hintedLocation
+          val hintedLocationState = state[hintedLocation]
+          hintedLocationState.hintRevealed = true
+          state.lastRevealedAnsemReport = ansemReportState
+        },
+        onDisallowed = { reason ->
+          if (reason == "incorrect location") {
+            ansemReportState.failedAttempts++
+          }
+        },
+        checkLocation = { locationState ->
+          if (ansemReportState.lockedOut) {
+            "locked out"
+          } else {
+            if (ansemReportState.reportLocation == locationState.location) {
+              null
+            } else {
+              "incorrect location"
             }
           }
-        } else {
-          state.allImportantCheckLocations.forEach { it.foundImportantChecks -= importantCheck }
-          state.unfoundImportantChecks += importantCheck
         }
-      }
-  ) {
-    val imagePath = when (importantCheck) {
-      is AnsemReport -> {
-        "images/simple/ansem_report${importantCheck.number}.png"
-      }
-      is Magic -> {
-        "images/simple/${importantCheck.imageName}.png"
-      }
-      is DriveForm -> {
-        "images/simple/${importantCheck.imageName}.png"
-      }
-      is ImportantAbility -> {
-        "images/simple/${importantCheck.imageName}.png"
-      }
-      is TornPage -> {
-        "images/old/torn_page.png"
-      }
-      is Summon -> {
-        "images/simple/${importantCheck.imageName}.png"
-      }
-      is Proof -> {
-        "images/simple/proof_of_${importantCheck.imageName}.png"
-      }
-      is PromiseCharm -> {
-        "images/simple/promise_charm.png"
-      }
+      )
     }
-    Image(imageFromResource(imagePath))
-  }
+  )
+}
 
+@Composable private fun AvailableDriveFormIndicator(driveForm: DriveForm, state: TrackerState) {
+  val driveFormState = state[driveForm]
+  DriveFormIndicator(
+    driveForm = driveForm,
+    driveFormLevel = driveFormState.driveFormLevel,
+    imageAlpha = if (state.importantCheckHasBeenFound(driveForm)) 0.25f else 1.0f,
+    displayLevelZero = true,
+    onClick = {
+      state.attemptToAddImportantCheck(
+        driveForm,
+        onAllowed = {
+          if (driveFormState.driveFormLevel == 0) {
+            driveFormState.driveFormLevel = 1
+          }
+        }
+      )
+    },
+    onAdjustDriveFormLevel = { adjustment ->
+      driveFormState.driveFormLevel = (driveFormState.driveFormLevel + adjustment).coerceIn(0, 7)
+    }
+  )
+}
+
+@Composable private fun AvailableOtherImportantCheckIndicator(importantCheck: ImportantCheck, state: TrackerState) {
+  OtherImportantCheckIndicator(
+    importantCheck = importantCheck,
+    imageAlpha = if (state.importantCheckHasBeenFound(importantCheck)) 0.25f else 1.0f,
+    onClick = { state.attemptToAddImportantCheck(importantCheck) }
+  )
+}
+
+@Composable private fun FoundAnsemReportIndicator(ansemReport: AnsemReport, state: TrackerState) {
+  val ansemReportState = state[ansemReport]
+  AnsemReportIndicator(
+    ansemReport,
+    onClick = { state.lastRevealedAnsemReport = ansemReportState }
+  )
+}
+
+@Composable private fun FoundDriveFormIndicator(driveForm: DriveForm, state: TrackerState) {
+  val driveFormState = state[driveForm]
+  DriveFormIndicator(
+    driveForm = driveForm,
+    driveFormLevel = driveFormState.driveFormLevel,
+    displayLevelZero = true,
+    onClick = { state.removeImportantCheck(driveForm) },
+    onAdjustDriveFormLevel = { adjustment ->
+      driveFormState.driveFormLevel = (driveFormState.driveFormLevel + adjustment).coerceIn(0, 7)
+    }
+  )
+}
+
+@Composable private fun FoundOtherImportantCheckIndicator(importantCheck: ImportantCheck, state: TrackerState) {
+  OtherImportantCheckIndicator(
+    importantCheck = importantCheck,
+    onClick = { state.removeImportantCheck(importantCheck) }
+  )
 }

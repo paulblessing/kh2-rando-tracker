@@ -1,204 +1,125 @@
-@file:OptIn(ExperimentalLayout::class)
-
 package io.github.paulblessing.kh2randotracker
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.ScrollableColumn
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Surface
-import androidx.compose.material.darkColors
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.imageFromResource
 import androidx.compose.ui.unit.dp
 
-@Composable fun BroadcastWindow(state: TrackerState, onSelectHintsFile: () -> Unit) {
-  MaterialTheme(colors = darkColors()) {
-    Surface(modifier = Modifier.fillMaxSize()) {
-      if (state.hintsLoaded) {
-        ScrollableColumn {
-          FlowRow(mainAxisAlignment = MainAxisAlignment.Center) {
-            for (world in state.allImportantCheckLocations.filter { it.enabled && it.broadcast }) {
-              BroadcastImportantCheckLocation(world)
-            }
-          }
-
-          Spacer(Modifier.height(16.dp))
-
-          BroadcastReportAndPageCounter(state)
-
-          Spacer(Modifier.height(16.dp))
-
-          Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
-            val items = listOf(
-              state.ProofOfPeace,
-              state.ProofOfNonexistence,
-              state.ProofOfConnection,
-              state.PromiseCharm,
-              state.SecondChance,
-              state.OnceMore
-            ).filter { it.enabled }
-            for (item in items) {
-              BroadcastItemGotIndicator(item, state)
-            }
-          }
-
-          Spacer(Modifier.height(8.dp))
-
-          Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
-            val items = listOf(
-              setOf(state.Fire1, state.Fire2, state.Fire3),
-              setOf(state.Blizzard1, state.Blizzard2, state.Blizzard3),
-              setOf(state.Thunder1, state.Thunder2, state.Thunder3),
-              setOf(state.Cure1, state.Cure2, state.Cure3),
-              setOf(state.Reflect1, state.Reflect2, state.Reflect3),
-              setOf(state.Magnet1, state.Magnet2, state.Magnet3),
-            )
-            for (item in items) {
-              BroadcastMagicGotIndicator(item, state)
-            }
-          }
-          Spacer(Modifier.height(8.dp))
-
-          Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
-            val items = listOf(
-              state.ValorForm,
-              state.WisdomForm,
-              state.LimitForm,
-              state.MasterForm,
-              state.FinalForm
-            )
-            for (item in items) {
-              BroadcastFormGotIndicator(item, state)
-            }
-          }
-          Spacer(Modifier.height(8.dp))
-
-          Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
-            val items = listOf(
-              state.Genie,
-              state.Stitch,
-              state.ChickenLittle,
-              state.PeterPan
-            )
-            for (item in items) {
-              BroadcastSummonGotIndicator(item, state)
-            }
-          }
-        }
-      } else {
-        LoadHintsView(onSelectHintsFile)
+@Composable fun BroadcastWindow(state: TrackerState) {
+  Column(verticalArrangement = Arrangement.SpaceEvenly) {
+    FlowRow(mainAxisAlignment = FlowMainAxisAlignment.Center) {
+      for (locationState in state.importantCheckLocationStates.filter { it.location.broadcast && it.enabled }) {
+        ImportantCheckLocationIndicator(locationState, state, width = 80.dp, showFoundChecks = true)
       }
     }
+
+    CountSummariesRow(state)
+    MagicRow(state)
+    DriveFormRow(state)
+    SummonRow(state)
+    ProofsAndOthersRow(state)
   }
 }
 
-@Composable fun BroadcastImportantCheckLocation(location: ImportantCheckLocation) {
-  Box(
-    Modifier.size(width = 80.dp, height = 64.dp)
-//      .border(1.dp, Color.Red)
-      .padding(horizontal = 8.dp, vertical = 8.dp)
-  ) {
-    Image(imageFromResource(location.imagePath))
-    ImportantCheckCounter(
-      showFoundChecks = true,
-      foundImportantChecks = location.foundImportantChecks,
-      totalImportantChecks = location.totalImportantChecks,
-      modifier = Modifier.align(Alignment.BottomEnd)
-    )
-  }
-}
-
-@Composable fun BroadcastReportAndPageCounter(state: TrackerState) {
-  val foundReports = state.allAnsemReports - state.unfoundImportantChecks
-  val foundPages = state.allTornPages - state.unfoundImportantChecks
+@Composable private fun CountSummariesRow(state: TrackerState) {
+  val foundReports = AnsemReport.values().toSet() - state.unfoundImportantChecks
+  val foundPages = TornPage.values().toSet() - state.unfoundImportantChecks
   Row(
-    Modifier.height(64.dp)
-      .fillMaxWidth()
-//      .border(1.dp, Color.Red)
-      .padding(horizontal = 8.dp, vertical = 8.dp),
+    Modifier.height(36.dp).fillMaxWidth().padding(horizontal = 8.dp, vertical = 2.dp),
     verticalAlignment = Alignment.CenterVertically,
-    horizontalArrangement = Arrangement.Center,
+    horizontalArrangement = Arrangement.SpaceBetween,
   ) {
-    Image(imageFromResource("images/simple/ansem_report.png"))
-    ImportantCheckCounter(
-      showFoundChecks = true,
-      foundImportantChecks = foundReports,
-      totalImportantChecks = 13
-    )
-
-    Spacer(Modifier.width(48.dp))
-
-    Image(imageFromResource("images/old/torn_page.png"))
-    ImportantCheckCounter(
-      showFoundChecks = true,
-      foundImportantChecks = foundPages,
-      totalImportantChecks = 5
+    val iconSet = AmbientImportantCheckIconSet.current
+    Row(verticalAlignment = Alignment.CenterVertically) {
+      Image(imageFromResource(iconSet.icons.getValue(AnsemReport.Report1)))
+      ReportOrPageCounter(found = foundReports.size, total = 13)
+    }
+    Row(verticalAlignment = Alignment.CenterVertically) {
+      Image(imageFromResource(iconSet.icons.getValue(TornPage.TornPage1)))
+      ReportOrPageCounter(found = foundPages.size, total = 5)
+    }
+    ReportOrPageCounter(
+      found = state.foundImportantChecksConsideredImportantCount,
+      total = state.totalImportantChecksConsideredImportantCount
     )
   }
 }
 
-@Composable fun BroadcastItemGotIndicator(importantCheck: ImportantCheck, state: TrackerState) {
-  val imagePath = when (importantCheck) {
-    is AnsemReport -> {
-      "images/simple/ansem_report${importantCheck.number}.png"
-    }
-    is Magic -> {
-      "images/simple/${importantCheck.imageName}.png"
-    }
-    is DriveForm -> {
-      "images/simple/${importantCheck.imageName}.png"
-    }
-    is ImportantAbility -> {
-      "images/simple/${importantCheck.imageName}.png"
-    }
-    is TornPage -> {
-      "images/old/torn_page.png"
-    }
-    is Summon -> {
-      "images/simple/${importantCheck.imageName}.png"
-    }
-    is Proof -> {
-      "images/simple/proof_of_${importantCheck.imageName}.png"
-    }
-    is PromiseCharm -> {
-      "images/simple/promise_charm.png"
-    }
-  }
-
-  val alpha = if (importantCheck in state.unfoundImportantChecks) 0.25f else 1.0f
-
-  Image(imageFromResource(imagePath), Modifier.height(36.dp), alpha = alpha)
-}
-
-@Composable fun BroadcastMagicGotIndicator(magics: Set<Magic>, state: TrackerState) {
-  val imagePath = "images/simple/${magics.first().imageName}.png"
-
-  val count = (magics - state.unfoundImportantChecks).size
-  val alpha = if (count == 0) 0.25f else 1.0f
-
-  Box(Modifier.height(36.dp)) {
-    Image(imageFromResource(imagePath), alpha = alpha)
-    if (count > 1) {
-      Image(imageFromResource(imagesByNumber[count]), Modifier.height(16.dp).align(Alignment.BottomEnd))
+@Composable private fun ProofsAndOthersRow(state: TrackerState) {
+  Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
+    listOf(
+      ImportantAbility.SecondChance,
+      ImportantAbility.OnceMore,
+      PromiseCharm,
+      Proof.ProofOfNonexistence,
+      Proof.ProofOfConnection,
+      Proof.ProofOfPeace
+    ).mapNotNull { importantCheck ->
+      importantCheck.takeIf(state::showImportantCheck)
+    }.forEach { importantCheck ->
+      BroadcastOtherImportantCheckIndicator(importantCheck, state)
     }
   }
 }
 
-@Composable fun BroadcastFormGotIndicator(form: DriveForm, state: TrackerState) {
-  val imagePath = "images/simple/${form.imageName}.png"
-
-  val alpha = if (form in state.unfoundImportantChecks) 0.25f else 1.0f
-
-  Image(imageFromResource(imagePath), Modifier.height(36.dp), alpha = alpha)
+@Composable private fun MagicRow(state: TrackerState) {
+  Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
+    val items = listOf(
+      setOf(Magic.Fire1, Magic.Fire2, Magic.Fire3),
+      setOf(Magic.Blizzard1, Magic.Blizzard2, Magic.Blizzard3),
+      setOf(Magic.Thunder1, Magic.Thunder2, Magic.Thunder3),
+      setOf(Magic.Cure1, Magic.Cure2, Magic.Cure3),
+      setOf(Magic.Reflect1, Magic.Reflect2, Magic.Reflect3),
+      setOf(Magic.Magnet1, Magic.Magnet2, Magic.Magnet3),
+    )
+    for (item in items) {
+      BroadcastMagicIndicator(item, state)
+    }
+  }
 }
 
-@Composable fun BroadcastSummonGotIndicator(summon: Summon, state: TrackerState) {
-  val imagePath = "images/simple/${summon.imageName}.png"
+@Composable private fun DriveFormRow(state: TrackerState) {
+  Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
+    for (item in DriveForm.values()) {
+      BroadcastDriveFormIndicator(item, state)
+    }
+  }
+}
 
-  val alpha = if (summon in state.unfoundImportantChecks) 0.25f else 1.0f
+@Composable private fun SummonRow(state: TrackerState) {
+  Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
+    for (item in Summon.values()) {
+      BroadcastOtherImportantCheckIndicator(item, state)
+    }
+  }
+}
 
-  Image(imageFromResource(imagePath), Modifier.height(36.dp), alpha = alpha)
+@Composable private fun BroadcastMagicIndicator(magics: Set<Magic>, state: TrackerState) {
+  val magicLevel = (magics - state.unfoundImportantChecks).size // TODO: More efficient way of this?
+  MagicIndicator(
+    magic = magics.first(),
+    magicLevel = magicLevel,
+    imageAlpha = if (magicLevel > 0) 1.0f else 0.25f
+  )
+}
+
+@Composable private fun BroadcastDriveFormIndicator(driveForm: DriveForm, state: TrackerState) {
+  val driveFormState = state[driveForm]
+  val driveAcquired = state.importantCheckHasBeenFound(driveForm)
+  DriveFormIndicator(
+    driveForm = driveForm,
+    driveFormLevel = driveFormState.driveFormLevel,
+    displayLevelZero = driveAcquired,
+    imageAlpha = if (driveAcquired) 1.0f else 0.25f
+  )
+}
+
+@Composable private fun BroadcastOtherImportantCheckIndicator(importantCheck: ImportantCheck, state: TrackerState) {
+  OtherImportantCheckIndicator(
+    importantCheck = importantCheck,
+    imageAlpha = if (state.importantCheckHasBeenFound(importantCheck)) 1.0f else 0.25f
+  )
 }

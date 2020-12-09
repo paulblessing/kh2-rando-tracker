@@ -7,4 +7,3 @@ pluginManagement {
     
 }
 rootProject.name = "kh2-rando-tracker"
-

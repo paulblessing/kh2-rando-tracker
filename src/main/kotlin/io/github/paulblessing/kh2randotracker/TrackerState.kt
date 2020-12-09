@@ -1,199 +1,249 @@
-@file:OptIn(ExperimentalStdlibApi::class)
-
 package io.github.paulblessing.kh2randotracker
 
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import com.squareup.moshi.Json
+import com.squareup.moshi.JsonClass
 
-object TrackerState {
+@JsonClass(generateAdapter = true)
+class TrackerState(
+  @Json(name = "icls") val importantCheckLocationStates: List<ImportantCheckLocationState>,
+  @Json(name = "ars") val ansemReportStates: List<AnsemReportState>,
+  @Json(name = "dfs") val driveFormStates: List<DriveFormState>,
+  @Json(name = "oics") val otherImportantCheckStates: List<OtherImportantCheckState>
+) {
 
-  val SorasLevel = Other("images/simple/sora's_level.png")
-  val DriveForms = Other("images/simple/drive_form.png")
+  @Transient
+  private val importantCheckLocationStatesByLocation: Map<ImportantCheckLocation, ImportantCheckLocationState> =
+    importantCheckLocationStates.associateBy(ImportantCheckLocationState::location)
 
-  val SimulatedTwilightTown = World("images/simple/simulated_twilight_town.png")
-  val TwilightTown = World("images/simple/twilight_town.png")
-  val HollowBastion = World("images/simple/hollow_bastion.png")
-  val LandOfDragons = World("images/simple/land_of_dragons.png")
-  val BeastCastle = World("images/simple/beast's_castle.png")
-  val OlympusColiseum = World("images/simple/olympus_coliseum.png")
-  val PortRoyal = World("images/simple/port_royal.png")
-  val Agrabah = World("images/simple/agrabah.png")
-  val HalloweenTown = World("images/simple/halloween_town.png")
-  val PrideLands = World("images/simple/pride_land.png")
-  val DisneyCastle = World("images/simple/disney_castle.png")
-  val SpaceParanoids = World("images/simple/space_paranoids.png")
-  val WorldThatNeverWas = World("images/simple/the_world_that_never_was.png")
-  val Atlantica = World("images/simple/atlantica.png", defaultEnabled = false)
-  val HundredAcreWood = World("images/simple/100_acre_wood.png")
+  @Transient
+  private val importantCheckStatesByCheck: Map<ImportantCheck, ImportantCheckState> = run {
+    val result = mutableMapOf<ImportantCheck, ImportantCheckState>()
+    ansemReportStates.associateByTo(result, AnsemReportState::ansemReport)
+    driveFormStates.associateByTo(result, DriveFormState::driveForm)
+    otherImportantCheckStates.associateByTo(result, OtherImportantCheckState::importantCheck)
+    result
+  }
 
-  val GardenOfAssemblage = Other("images/simple/replica_data.png", broadcast = false)
-
-  val Report1 = AnsemReport(id = 101, number = 1)
-  val Report2 = AnsemReport(id = 102, number = 2)
-  val Report3 = AnsemReport(id = 103, number = 3)
-  val Report4 = AnsemReport(id = 104, number = 4)
-  val Report5 = AnsemReport(id = 105, number = 5)
-  val Report6 = AnsemReport(id = 106, number = 6)
-  val Report7 = AnsemReport(id = 107, number = 7)
-  val Report8 = AnsemReport(id = 108, number = 8)
-  val Report9 = AnsemReport(id = 109, number = 9)
-  val Report10 = AnsemReport(id = 110, number = 10)
-  val Report11 = AnsemReport(id = 111, number = 11)
-  val Report12 = AnsemReport(id = 112, number = 12)
-  val Report13 = AnsemReport(id = 113, number = 13)
-
-  val Fire1 = Magic(id = 200, imageName = "fire")
-  val Fire2 = Magic(id = 201, imageName = "fire")
-  val Fire3 = Magic(id = 202, imageName = "fire")
-  val Blizzard1 = Magic(id = 210, imageName = "blizzard")
-  val Blizzard2 = Magic(id = 211, imageName = "blizzard")
-  val Blizzard3 = Magic(id = 212, imageName = "blizzard")
-  val Thunder1 = Magic(id = 220, imageName = "thunder")
-  val Thunder2 = Magic(id = 221, imageName = "thunder")
-  val Thunder3 = Magic(id = 222, imageName = "thunder")
-  val Cure1 = Magic(id = 230, imageName = "cure")
-  val Cure2 = Magic(id = 231, imageName = "cure")
-  val Cure3 = Magic(id = 232, imageName = "cure")
-  val Reflect1 = Magic(id = 240, imageName = "reflect")
-  val Reflect2 = Magic(id = 241, imageName = "reflect")
-  val Reflect3 = Magic(id = 242, imageName = "reflect")
-  val Magnet1 = Magic(id = 250, imageName = "magnet")
-  val Magnet2 = Magic(id = 251, imageName = "magnet")
-  val Magnet3 = Magic(id = 252, imageName = "magnet")
-
-  val ValorForm = DriveForm(id = 300, imageName = "valor")
-  val WisdomForm = DriveForm(id = 301, imageName = "wisdom")
-  val LimitForm = DriveForm(id = 302, imageName = "limit")
-  val MasterForm = DriveForm(id = 303, imageName = "master")
-  val FinalForm = DriveForm(id = 304, imageName = "final")
-
-  val SecondChance = ImportantAbility(id = 400, "second_chance")
-  val OnceMore = ImportantAbility(id = 401, "once_more")
-
-  val TornPage1 = TornPage(id = 500, number = 1)
-  val TornPage2 = TornPage(id = 501, number = 2)
-  val TornPage3 = TornPage(id = 502, number = 3)
-  val TornPage4 = TornPage(id = 503, number = 4)
-  val TornPage5 = TornPage(id = 504, number = 5)
-
-  val Genie = Summon(id = 600, imageName = "genie")
-  val Stitch = Summon(id = 601, imageName = "stitch")
-  val ChickenLittle = Summon(id = 602, imageName = "chicken_little")
-  val PeterPan = Summon(id = 603, imageName = "peter_pan")
-
-  val ProofOfNonexistence = Proof(id = 700, imageName = "nonexistence")
-  val ProofOfConnection = Proof(id = 701, imageName = "connection")
-  val ProofOfPeace = Proof(id = 702, imageName = "tranquility")
-
-  val PromiseCharm = PromiseCharm(id = 800)
-
-  val allWorlds: Set<World>
+  val foundImportantChecksConsideredImportantCount: Int
     get() {
-      return setOf(
-        HollowBastion,
-        TwilightTown,
-        LandOfDragons,
-        BeastCastle,
-        OlympusColiseum,
-        SpaceParanoids,
-        HalloweenTown,
-        PortRoyal,
-        Agrabah,
-        PrideLands,
-        DisneyCastle,
-        HundredAcreWood,
-        SimulatedTwilightTown,
-        WorldThatNeverWas,
-        Atlantica
-      )
-    }
-
-  val allImportantCheckLocations: Set<ImportantCheckLocation>
-    get() {
-      return buildSet {
-        add(SorasLevel)
-        add(DriveForms)
-        addAll(allWorlds)
-        add(GardenOfAssemblage)
+      return importantCheckLocationStates.sumOf { locationState ->
+        locationState.foundImportantChecks.count { importantCheck ->
+          this[importantCheck].consideredImportant
+        }
       }
     }
 
-  val allAnsemReports: Set<AnsemReport>
-    get() {
-      return setOf(
-        Report1,
-        Report2,
-        Report3,
-        Report4,
-        Report5,
-        Report6,
-        Report7,
-        Report8,
-        Report9,
-        Report10,
-        Report11,
-        Report12,
-        Report13
-      )
+  @Transient
+  val totalImportantChecksConsideredImportantCount: Int = run {
+    var total = 0
+    total += ansemReportStates.count(AnsemReportState::consideredImportant)
+    total += driveFormStates.count(DriveFormState::consideredImportant)
+    total += otherImportantCheckStates.count(OtherImportantCheckState::consideredImportant)
+    total
+  }
+
+  @delegate:Transient
+  var activeLocation: ImportantCheckLocation? by mutableStateOf(null)
+
+  @delegate:Transient
+  var unfoundImportantChecks: Set<ImportantCheck> by mutableStateOf(ImportantCheck.allImportantChecks)
+
+  @delegate:Transient
+  var lastRevealedAnsemReport: AnsemReportState? by mutableStateOf(null)
+
+  init {
+    val alreadyFoundImportantChecks = importantCheckLocationStates.flatMapTo(mutableSetOf()) { locationState ->
+      locationState.foundImportantChecks
+    }
+    unfoundImportantChecks = unfoundImportantChecks - alreadyFoundImportantChecks
+  }
+
+  operator fun get(importantCheckLocation: ImportantCheckLocation): ImportantCheckLocationState {
+    return importantCheckLocationStatesByLocation.getValue(importantCheckLocation)
+  }
+
+  operator fun get(ansemReport: AnsemReport): AnsemReportState {
+    return importantCheckStatesByCheck.getValue(ansemReport) as AnsemReportState
+  }
+
+  operator fun get(magic: Magic): OtherImportantCheckState {
+    return importantCheckStatesByCheck.getValue(magic) as OtherImportantCheckState
+  }
+
+  operator fun get(driveForm: DriveForm): DriveFormState {
+    return importantCheckStatesByCheck.getValue(driveForm) as DriveFormState
+  }
+
+  operator fun get(importantAbility: ImportantAbility): OtherImportantCheckState {
+    return importantCheckStatesByCheck.getValue(importantAbility) as OtherImportantCheckState
+  }
+
+  operator fun get(tornPage: TornPage): OtherImportantCheckState {
+    return importantCheckStatesByCheck.getValue(tornPage) as OtherImportantCheckState
+  }
+
+  operator fun get(summon: Summon): OtherImportantCheckState {
+    return importantCheckStatesByCheck.getValue(summon) as OtherImportantCheckState
+  }
+
+  operator fun get(proof: Proof): OtherImportantCheckState {
+    return importantCheckStatesByCheck.getValue(proof) as OtherImportantCheckState
+  }
+
+  operator fun get(promiseCharm: PromiseCharm): OtherImportantCheckState {
+    return importantCheckStatesByCheck.getValue(promiseCharm) as OtherImportantCheckState
+  }
+
+  operator fun get(importantCheck: ImportantCheck): ImportantCheckState {
+    return importantCheckStatesByCheck.getValue(importantCheck)
+  }
+
+  fun importantCheckHasBeenFound(importantCheck: ImportantCheck): Boolean {
+    return importantCheck !in unfoundImportantChecks
+  }
+
+  fun showImportantCheck(importantCheck: ImportantCheck): Boolean {
+    // Promise charm is really the only thing that we want to totally hide when it's off
+    return if (importantCheck is PromiseCharm) {
+      this[PromiseCharm].consideredImportant
+    } else {
+      true
+    }
+  }
+
+  private fun activeLocationState(): ImportantCheckLocationState? {
+    return activeLocation?.let { location -> this[location] }
+  }
+
+  fun attemptToAddImportantCheck(
+    importantCheck: ImportantCheck,
+    onAllowed: () -> Unit = { },
+    onDisallowed: (reason: Any) -> Unit = { },
+    checkLocation: (locationState: ImportantCheckLocationState) -> Any? = { null }
+  ) {
+    if (importantCheckHasBeenFound(importantCheck)) {
+      onDisallowed("already found")
+      return
+    }
+    val activeLocationState = activeLocationState() ?: run {
+      onDisallowed("no active location")
+      return
+    }
+    if (activeLocationState.foundImportantChecks.size >= 20) run {
+      onDisallowed("no space")
+      return
     }
 
-  val allMagic: Set<Magic>
-    get() {
-      return setOf(
-        Fire1,
-        Fire2,
-        Fire3,
-        Blizzard1,
-        Blizzard2,
-        Blizzard3,
-        Thunder1,
-        Thunder2,
-        Thunder3,
-        Cure1,
-        Cure2,
-        Cure3,
-        Reflect1,
-        Reflect2,
-        Reflect3,
-        Magnet1,
-        Magnet2,
-        Magnet3
-      )
+    val locationCheckResult = checkLocation(activeLocationState)
+    if (locationCheckResult != null) {
+      onDisallowed(locationCheckResult)
+      return
     }
 
-  val allDriveForms: Set<DriveForm>
-    get() = setOf(ValorForm, WisdomForm, LimitForm, MasterForm, FinalForm)
+    activeLocationState.foundImportantChecks += importantCheck
+    unfoundImportantChecks = unfoundImportantChecks - importantCheck
 
-  val allImportantAbilities: Set<ImportantAbility>
-    get() = setOf(SecondChance, OnceMore)
+    onAllowed()
+  }
 
-  val allTornPages: Set<TornPage>
-    get() = setOf(TornPage1, TornPage2, TornPage3, TornPage4, TornPage5)
+  fun removeImportantCheck(importantCheck: ImportantCheck) {
+    importantCheckLocationStates.forEach { it.foundImportantChecks -= importantCheck }
+    unfoundImportantChecks = unfoundImportantChecks + importantCheck
+  }
 
-  val allSummons: Set<Summon>
-    get() = setOf(Genie, Stitch, ChickenLittle, PeterPan)
+  companion object {
 
-  val allProofs: Set<Proof>
-    get() = setOf(ProofOfNonexistence, ProofOfConnection, ProofOfPeace)
-
-  val allImportantChecks: Set<ImportantCheck>
-    get() {
-      return buildSet {
-        addAll(allAnsemReports)
-        addAll(allMagic)
-        addAll(allDriveForms)
-        addAll(allImportantAbilities)
-        addAll(allTornPages)
-        addAll(allSummons)
-        addAll(allProofs)
-        add(PromiseCharm)
+    fun fromHints(hints: List<Hint>, hintSettings: Set<HintSetting>): TrackerState {
+      val locationStates = run {
+        ImportantCheckLocation.values().map { location ->
+          val enabled = when (location) {
+            ImportantCheckLocation.SorasLevel -> HintSetting.SorasHeart in hintSettings
+            ImportantCheckLocation.SimulatedTwilightTown -> HintSetting.SimulatedTwilightTown in hintSettings
+            ImportantCheckLocation.Atlantica -> HintSetting.Atlantica in hintSettings
+            ImportantCheckLocation.HundredAcreWood -> HintSetting.HundredAcreWood in hintSettings
+            else -> true
+          }
+          val totalImportantChecks = hints.firstOrNull { it.hintedLocation == location }?.importantCheckCount ?: 0
+          ImportantCheckLocationState(location, enabled, totalImportantChecks)
+        }
       }
-    }
 
-  var hintsLoaded: Boolean by mutableStateOf(false)
-  var broadcastWindow: Boolean by mutableStateOf(false)
-  var activeLocation: ImportantCheckLocation? = null
-  var unfoundImportantChecks: Set<ImportantCheck> by mutableStateOf(allImportantChecks)
+      val ansemReportStates = run {
+        val ansemReportsConsideredImportant = HintSetting.AnsemReports in hintSettings
+        AnsemReport.values().map { ansemReport ->
+          val hint = hints[ansemReport.ordinal]
+          AnsemReportState(
+            ansemReport,
+            consideredImportant = ansemReportsConsideredImportant,
+            reportLocation = hint.reportLocation,
+            hintedLocation = hint.hintedLocation,
+            importantCheckCount = hint.importantCheckCount
+          )
+        }
+      }
+
+      val driveFormStates = DriveForm.values().map { driveForm ->
+        if (driveForm == DriveForm.FinalForm) {
+          DriveFormState(DriveForm.FinalForm, consideredImportant = HintSetting.FinalForm in hintSettings)
+        } else {
+          DriveFormState(driveForm, consideredImportant = true)
+        }
+      }
+
+      val otherImportantCheckStates = run {
+        val importantCheckStates = mutableListOf<OtherImportantCheckState>()
+
+        run {
+          val cureConsideredImportant = HintSetting.Cure in hintSettings
+          Magic.values().mapTo(importantCheckStates) { magic ->
+            if (magic == Magic.Cure1 || magic == Magic.Cure2 || magic == Magic.Cure3) {
+              OtherImportantCheckState(magic, consideredImportant = cureConsideredImportant)
+            } else {
+              OtherImportantCheckState(magic, consideredImportant = true)
+            }
+          }
+        }
+
+        run {
+          val importantAbilitiesConsideredImportant = HintSetting.SecondChanceOnceMore in hintSettings
+          ImportantAbility.values().mapTo(importantCheckStates) { importantAbility ->
+            OtherImportantCheckState(importantAbility, consideredImportant = importantAbilitiesConsideredImportant)
+          }
+        }
+
+        run {
+          val tornPagesConsideredImportant = HintSetting.TornPages in hintSettings
+          TornPage.values().mapTo(importantCheckStates) { tornPage ->
+            OtherImportantCheckState(tornPage, consideredImportant = tornPagesConsideredImportant)
+          }
+        }
+
+        Summon.values().mapTo(importantCheckStates) { summon ->
+          OtherImportantCheckState(summon, consideredImportant = true)
+        }
+
+        Proof.values().mapTo(importantCheckStates) { proof ->
+          OtherImportantCheckState(proof, consideredImportant = true)
+        }
+
+        importantCheckStates += OtherImportantCheckState(
+          PromiseCharm,
+          consideredImportant = HintSetting.PromiseCharm in hintSettings
+        )
+
+        importantCheckStates
+      }
+
+      return TrackerState(
+        importantCheckLocationStates = locationStates,
+        ansemReportStates = ansemReportStates,
+        driveFormStates = driveFormStates,
+        otherImportantCheckStates = otherImportantCheckStates
+      )
+    }
+  }
 
 }
