@@ -5,11 +5,12 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 plugins {
   kotlin("jvm") version "1.4.20"
   kotlin("kapt") version "1.4.20"
-  id("org.jetbrains.compose") version "0.2.0-build132"
+  id("org.jetbrains.compose") version "0.3.0-build134"
+  id("com.github.johnrengelman.shadow") version "6.1.0"
 }
 
 group = "io.github.paulblessing"
-version = "1.0"
+version = "1.0.1"
 
 repositories {
   jcenter()
@@ -18,17 +19,30 @@ repositories {
 }
 
 dependencies {
-  implementation(compose.desktop.currentOs)
+  implementation(compose.desktop.macos_x64)
+  implementation(compose.desktop.windows_x64)
+  implementation(compose.desktop.linux_x64)
   implementation("com.squareup.moshi:moshi:1.11.0")
   implementation("com.squareup.okio:okio:2.9.0")
   kapt("com.squareup.moshi:moshi-kotlin-codegen:1.11.0")
   testImplementation("junit:junit:4.12")
 }
 
-tasks.withType<KotlinCompile>() {
+java {
+  sourceCompatibility = JavaVersion.VERSION_11
+  targetCompatibility = JavaVersion.VERSION_11
+}
+
+tasks.withType<KotlinCompile> {
   kotlinOptions {
     freeCompilerArgs = listOf("-Xinline-classes", "-Xopt-in=androidx.compose.foundation.layout.ExperimentalLayout")
     jvmTarget = "11"
+  }
+}
+
+tasks.withType<Jar> {
+  manifest {
+    attributes["Main-Class"] = "io.github.paulblessing.kh2randotracker.Tracker"
   }
 }
 
