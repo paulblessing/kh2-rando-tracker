@@ -62,28 +62,40 @@ val imagesByNumber = listOf(
   showFoundChecks: Boolean,
   modifier: Modifier = Modifier
 ) {
-  val foundImportantChecks = locationState.foundImportantChecks
-  val totalImportantChecks = locationState.totalImportantChecks
-
-  Row(modifier.height(20.dp), verticalAlignment = Alignment.CenterVertically) {
-    val foundImportantChecksConsideredImportantSize = foundImportantChecks.count { importantCheck ->
+  ImportantCheckCounter(
+    foundImportantChecks = locationState.foundImportantChecks.count { importantCheck ->
       state[importantCheck].consideredImportant
-    }
+    },
+    totalImportantChecks = locationState.totalImportantChecks,
+    showFoundChecks = showFoundChecks,
+    hintRevealed = locationState.hintRevealed,
+    modifier = modifier
+  )
+}
 
-    val revealed = locationState.hintRevealed
+@Composable fun ImportantCheckCounter(
+  foundImportantChecks: Int,
+  totalImportantChecks: Int,
+  showFoundChecks: Boolean,
+  hintRevealed: Boolean,
+  modifier: Modifier = Modifier
+) {
+  Row(modifier.height(20.dp), verticalAlignment = Alignment.CenterVertically) {
     if (showFoundChecks) {
-      if (!revealed || totalImportantChecks > 0) {
-        Image(imageFromResource(imagesByNumber[foundImportantChecksConsideredImportantSize]))
+      if (hintRevealed && totalImportantChecks == 0) {
+        // Nothing - want to just show the heartless symbol
+      } else {
+        Image(imageFromResource(imagesByNumber[foundImportantChecks]))
         Spacer(Modifier.width(4.dp))
         Image(imageFromResource("images/VerticalBar.png"), modifier = Modifier.rotate(20.0f))
         Spacer(Modifier.width(4.dp))
       }
     }
 
-    if (revealed) {
+    if (hintRevealed) {
       when (totalImportantChecks) {
         0 -> Image(imageFromResource("images/Heartless.png"))
-        foundImportantChecksConsideredImportantSize -> Image(imageFromResource("images/Mickey_Head.png"))
+        foundImportantChecks -> Image(imageFromResource("images/Mickey_Head.png"))
         else -> Image(imageFromResource(imagesByNumber[totalImportantChecks]))
       }
     } else {

@@ -1,4 +1,5 @@
 @file:JvmName("Tracker")
+
 package io.github.paulblessing.kh2randotracker
 
 import androidx.compose.desktop.AppManager
@@ -44,6 +45,7 @@ fun main() {
 
   SwingUtilities.invokeLater {
     val stateHolder = mutableStateOf(trackerState)
+    val hintLoadingErrorHolder = mutableStateOf<Throwable?>(null)
     var importantCheckLocationIconSet: ImportantCheckLocationIconSet by mutableStateOf(savedLocationIconSet)
     var importantCheckIconSet: ImportantCheckIconSet by mutableStateOf(savedCheckIconSet)
     var aboutDialogShowing: Boolean by mutableStateOf(false)
@@ -65,19 +67,10 @@ fun main() {
     })
     val fileMenu = Menu("File", reset)
 
-    val simpleLocationIcons = MenuItem("Use minimal location icons", onClick = {
-      importantCheckLocationIconSet = ImportantCheckLocationIconSet.simple
-    })
-    val classicLocationIcons = MenuItem("Use classic location icons", onClick = {
-      importantCheckLocationIconSet = ImportantCheckLocationIconSet.classic
-    })
-    val simpleItemIcons = MenuItem("Use minimal item icons", onClick = {
-      importantCheckIconSet = ImportantCheckIconSet.simple
-    })
-    val classicItemIcons = MenuItem("Use classic item icons", onClick = {
-      importantCheckIconSet = ImportantCheckIconSet.classic
-    })
-    val optionsMenu = Menu("Options", simpleLocationIcons, classicLocationIcons, simpleItemIcons, classicItemIcons)
+    val optionsMenu = buildOptionsMenu(
+      onImportantCheckLocationIconSetSelected = { importantCheckLocationIconSet = it },
+      onImportantCheckIconSetSelected = { importantCheckIconSet = it }
+    )
 
     val about = MenuItem("About tracker", onClick = {
       aboutDialogShowing = true
@@ -86,26 +79,25 @@ fun main() {
 
     val menuBar = MenuBar(fileMenu, optionsMenu, aboutMenu)
 
-    AppWindow(
+    val trackerWindow = AppWindow(
       title = "KH2 Randomizer Tracker",
       centered = false,
       location = IntOffset(100, 50),
       size = IntSize(640, 800),
       icon = getIcon(),
       menuBar = menuBar
-    ).show {
-      val state = stateHolder.value
-      Providers(
-        AmbientImportantCheckLocationIconSet provides importantCheckLocationIconSet,
-        AmbientImportantCheckIconSet provides importantCheckIconSet
-      ) {
-        MaterialTheme(colors = darkColors()) {
-          Surface(modifier = Modifier.fillMaxSize()) {
-            if (state == null) {
-              LoadHintsView(onSelectHintsFile = { selectHintsFile(stateHolder) })
-            } else {
-              MainWindow(state)
-            }
+    )
+    trackerWindow.show {
+      TrackerTheme(importantCheckLocationIconSet, importantCheckIconSet) {
+        Surface(modifier = Modifier.fillMaxSize()) {
+          val state = stateHolder.value
+          if (state == null) {
+            LoadHintsView(
+              hintLoadingError = hintLoadingErrorHolder.value,
+              onSelectHintFile = { selectAndLoadHintFile(stateHolder, hintLoadingErrorHolder) }
+            )
+          } else {
+            MainWindow(state)
           }
         }
       }
@@ -115,25 +107,24 @@ fun main() {
       }
     }
 
-    AppWindow(
+    val broadcastWindow = AppWindow(
       title = "KH2 Randomizer Broadcast",
       centered = false,
       location = IntOffset(900, 200),
       size = IntSize(320, 500),
       menuBar = menuBar
-    ).show {
-      val state = stateHolder.value
-      Providers(
-        AmbientImportantCheckLocationIconSet provides importantCheckLocationIconSet,
-        AmbientImportantCheckIconSet provides importantCheckIconSet
-      ) {
-        MaterialTheme(colors = darkColors()) {
-          Surface(modifier = Modifier.fillMaxSize()) {
-            if (state == null) {
-              LoadHintsView(onSelectHintsFile = { selectHintsFile(stateHolder) })
-            } else {
-              BroadcastWindow(state)
-            }
+    )
+    broadcastWindow.show {
+      TrackerTheme(importantCheckLocationIconSet, importantCheckIconSet) {
+        Surface(modifier = Modifier.fillMaxSize()) {
+          val state = stateHolder.value
+          if (state == null) {
+            LoadHintsView(
+              hintLoadingError = hintLoadingErrorHolder.value,
+              onSelectHintFile = { selectAndLoadHintFile(stateHolder, hintLoadingErrorHolder) }
+            )
+          } else {
+            BroadcastWindow(state)
           }
         }
       }
@@ -162,19 +153,52 @@ fun main() {
         @Suppress("UNCHECKED_CAST")
         val fileList = transferable.getTransferData(DataFlavor.javaFileListFlavor) as? List<File> ?: return false
 
-        val hintsFile = fileList.singleOrNull() ?: return false
-        loadHints(stateHolder, hintsFile)
+        val hintFile = fileList.singleOrNull() ?: return false
+        loadHints(hintFile, stateHolder, hintLoadingErrorHolder)
 
         return true
       }
     }
-    for (window in AppManager.windows) {
-      window.window.transferHandler = transferHandler
-    }
+    trackerWindow.window.transferHandler = transferHandler
+    broadcastWindow.window.transferHandler = transferHandler
   }
 }
 
 private fun getIcon(): BufferedImage? {
   val classLoader = Thread.currentThread().contextClassLoader
   return classLoader.getResourceAsStream("images/classic/replica_data.png")?.let(ImageIO::read)
+}
+
+private fun buildOptionsMenu(
+  onImportantCheckLocationIconSetSelected: (ImportantCheckLocationIconSet) -> Unit,
+  onImportantCheckIconSetSelected: (ImportantCheckIconSet) -> Unit
+): Menu {
+  val simpleLocationIcons = MenuItem("Use minimal location icons", onClick = {
+    onImportantCheckLocationIconSetSelected(ImportantCheckLocationIconSet.simple)
+  })
+  val classicLocationIcons = MenuItem("Use classic location icons", onClick = {
+    onImportantCheckLocationIconSetSelected(ImportantCheckLocationIconSet.classic)
+  })
+  val simpleItemIcons = MenuItem("Use minimal item icons", onClick = {
+    onImportantCheckIconSetSelected(ImportantCheckIconSet.simple)
+  })
+  val classicItemIcons = MenuItem("Use classic item icons", onClick = {
+    onImportantCheckIconSetSelected(ImportantCheckIconSet.classic)
+  })
+  return Menu("Options", simpleLocationIcons, classicLocationIcons, simpleItemIcons, classicItemIcons)
+}
+
+@Composable private fun TrackerTheme(
+  importantCheckLocationIconSet: ImportantCheckLocationIconSet,
+  importantCheckIconSet: ImportantCheckIconSet,
+  content: @Composable () -> Unit
+) {
+  Providers(
+    AmbientImportantCheckLocationIconSet provides importantCheckLocationIconSet,
+    AmbientImportantCheckIconSet provides importantCheckIconSet
+  ) {
+    MaterialTheme(colors = darkColors()) {
+      content()
+    }
+  }
 }

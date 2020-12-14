@@ -33,7 +33,7 @@ import androidx.compose.ui.unit.dp
 @Composable fun MagicIndicator(
   magic: Magic,
   magicLevel: Int,
-  imageAlpha: Float
+  imageAlpha: Float = 1.0f
 ) {
   ImportantCheckIndicator(
     importantCheck = magic,
