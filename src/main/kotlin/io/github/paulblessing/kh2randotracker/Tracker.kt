@@ -49,6 +49,7 @@ fun main() {
     var importantCheckLocationIconSet: ImportantCheckLocationIconSet by mutableStateOf(savedLocationIconSet)
     var importantCheckIconSet: ImportantCheckIconSet by mutableStateOf(savedCheckIconSet)
     var aboutDialogShowing: Boolean by mutableStateOf(false)
+    var confirmResetDialogShowing: Boolean by mutableStateOf(false)
 
     Desktop.getDesktop().setQuitHandler { _, response ->
       // TODO: Dialog or something?
@@ -62,10 +63,20 @@ fun main() {
       exitProcess(0)
     })
 
+    val dummy = MenuItem("-----", onClick = { })
     val reset = MenuItem("Reset", onClick = {
-      stateHolder.value = null
+      confirmResetDialogShowing = true
     })
-    val fileMenu = Menu("File", reset)
+    val restoreFromAutoSave = MenuItem("Restore from auto save", onClick = {
+      val autoSavedState = SavedState.loadFromAutoSave()
+      if (autoSavedState != null) {
+        val autoSavedTrackerState = autoSavedState.trackerState
+        if (autoSavedTrackerState != null) {
+          stateHolder.value = trackerState
+        }
+      }
+    })
+    val fileMenu = Menu("File", dummy, reset, restoreFromAutoSave)
 
     val optionsMenu = buildOptionsMenu(
       onImportantCheckLocationIconSetSelected = { importantCheckLocationIconSet = it },
@@ -104,6 +115,17 @@ fun main() {
 
       if (aboutDialogShowing) {
         AboutDialog(onDismissRequest = { aboutDialogShowing = false })
+      }
+
+      if (confirmResetDialogShowing) {
+        ConfirmResetDialog(
+          onDismissRequest = { confirmResetDialogShowing = false },
+          onResetConfirmed = {
+            SavedState.autoSave(trackerState, importantCheckLocationIconSet, importantCheckIconSet)
+            stateHolder.value = null
+            confirmResetDialogShowing = false
+          }
+        )
       }
     }
 

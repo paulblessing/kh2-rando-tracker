@@ -28,13 +28,7 @@ class TrackerState(
   }
 
   val foundImportantChecksConsideredImportantCount: Int
-    get() {
-      return importantCheckLocationStates.sumOf { locationState ->
-        locationState.foundImportantChecks.count { importantCheck ->
-          this[importantCheck].consideredImportant
-        }
-      }
-    }
+    get() = importantCheckStatesByCheck.values.count { it.consideredImportant && it.found }
 
   @Transient
   val totalImportantChecksConsideredImportantCount: Int = run {
@@ -49,16 +43,19 @@ class TrackerState(
   var activeLocation: ImportantCheckLocation? by mutableStateOf(null)
 
   @delegate:Transient
-  var unfoundImportantChecks: Set<ImportantCheck> by mutableStateOf(ImportantCheck.allImportantChecks)
-
-  @delegate:Transient
   var lastRevealedAnsemReport: AnsemReportState? by mutableStateOf(null)
 
   init {
-    val alreadyFoundImportantChecks = importantCheckLocationStates.flatMapTo(mutableSetOf()) { locationState ->
-      locationState.foundImportantChecks
+    // Initialize some transient state
+    for (importantCheckLocationState in importantCheckLocationStates) {
+      for (foundImportantCheck in importantCheckLocationState.foundImportantChecks) {
+        val importantCheckState = this[foundImportantCheck]
+        importantCheckState.found = true
+        if (importantCheckLocationState.hintRevealed) {
+          importantCheckState.hinted = true
+        }
+      }
     }
-    unfoundImportantChecks = unfoundImportantChecks - alreadyFoundImportantChecks
   }
 
   operator fun get(importantCheckLocation: ImportantCheckLocation): ImportantCheckLocationState {
@@ -102,7 +99,7 @@ class TrackerState(
   }
 
   fun importantCheckHasBeenFound(importantCheck: ImportantCheck): Boolean {
-    return importantCheck !in unfoundImportantChecks
+    return this[importantCheck].found
   }
 
   fun showImportantCheck(importantCheck: ImportantCheck): Boolean {
@@ -144,14 +141,20 @@ class TrackerState(
     }
 
     activeLocationState.foundImportantChecks += importantCheck
-    unfoundImportantChecks = unfoundImportantChecks - importantCheck
+    val importantCheckState = this[importantCheck]
+    importantCheckState.found = true
+    if (activeLocationState.hintRevealed) {
+      importantCheckState.hinted = true
+    }
 
     onAllowed()
   }
 
   fun removeImportantCheck(importantCheck: ImportantCheck) {
     importantCheckLocationStates.forEach { it.foundImportantChecks -= importantCheck }
-    unfoundImportantChecks = unfoundImportantChecks + importantCheck
+    val importantCheckState = this[importantCheck]
+    importantCheckState.found = false
+    importantCheckState.hinted = false
   }
 
   companion object {

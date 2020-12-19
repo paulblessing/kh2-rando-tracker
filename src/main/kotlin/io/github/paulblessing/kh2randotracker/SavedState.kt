@@ -26,8 +26,24 @@ class SavedState(
       File(trackerDirectory, "saved-state.json")
     }
 
+    private val autoSaveStateFile: File by lazy {
+      val trackerDirectory = File(System.getProperty("user.home"), ".kh2-rando-tracker")
+      trackerDirectory.mkdirs()
+      File(trackerDirectory, "auto-saved-state.json")
+    }
+
     fun load(): SavedState? {
       return if (saveStateFile.isFile) {
+        saveStateFile.source().buffer().use { source ->
+          savedStateAdapter.fromJson(source)
+        }
+      } else {
+        null
+      }
+    }
+
+    fun loadFromAutoSave(): SavedState? {
+      return if (autoSaveStateFile.isFile) {
         saveStateFile.source().buffer().use { source ->
           savedStateAdapter.fromJson(source)
         }
@@ -41,12 +57,29 @@ class SavedState(
       importantCheckLocationIconSet: ImportantCheckLocationIconSet,
       importantCheckIconSet: ImportantCheckIconSet
     ) {
+      save(saveStateFile, state, importantCheckLocationIconSet, importantCheckIconSet)
+    }
+
+    fun autoSave(
+      state: TrackerState?,
+      importantCheckLocationIconSet: ImportantCheckLocationIconSet,
+      importantCheckIconSet: ImportantCheckIconSet
+    ) {
+      save(autoSaveStateFile, state, importantCheckLocationIconSet, importantCheckIconSet)
+    }
+
+    private fun save(
+      file: File,
+      state: TrackerState?,
+      importantCheckLocationIconSet: ImportantCheckLocationIconSet,
+      importantCheckIconSet: ImportantCheckIconSet
+    ) {
       val savedState = SavedState(
         state,
         importantCheckLocationIconSet = importantCheckLocationIconSet.name,
         importantCheckIconSet = importantCheckIconSet.name
       )
-      saveStateFile.sink().buffer().use { sink ->
+      file.sink().buffer().use { sink ->
         savedStateAdapter.toJson(sink, savedState)
         sink.flush()
       }

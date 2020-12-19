@@ -128,6 +128,7 @@ import androidx.compose.ui.unit.dp
         when (importantCheck) {
           is AnsemReport -> AvailableAnsemReportIndicator(importantCheck, state)
           is DriveForm -> AvailableDriveFormIndicator(importantCheck, state)
+          is TornPage -> AvailableTornPageIndicator(importantCheck, state)
           else -> AvailableOtherImportantCheckIndicator(importantCheck, state)
         }
       }
@@ -148,6 +149,9 @@ import androidx.compose.ui.unit.dp
           val hintedLocation = ansemReportState.hintedLocation
           val hintedLocationState = state[hintedLocation]
           hintedLocationState.hintRevealed = true
+          for (importantCheck in hintedLocationState.foundImportantChecks) {
+            state[importantCheck].hinted = true
+          }
           state.lastRevealedAnsemReport = ansemReportState
         },
         onDisallowed = { reason ->
@@ -178,6 +182,7 @@ import androidx.compose.ui.unit.dp
     driveFormLevel = driveFormState.driveFormLevel,
     imageAlpha = if (state.importantCheckHasBeenFound(driveForm)) 0.25f else 1.0f,
     displayLevelZero = true,
+    displayHintedIcon = driveFormState.hinted,
     onClick = {
       state.attemptToAddImportantCheck(
         driveForm,
@@ -191,6 +196,16 @@ import androidx.compose.ui.unit.dp
     onAdjustDriveFormLevel = { adjustment ->
       driveFormState.driveFormLevel = (driveFormState.driveFormLevel + adjustment).coerceIn(0, 7)
     }
+  )
+}
+
+@Composable private fun AvailableTornPageIndicator(tornPage: TornPage, state: TrackerState) {
+  val tornPageState = state[tornPage]
+  OtherImportantCheckIndicator(
+    importantCheck = tornPage,
+    imageAlpha = if (state.importantCheckHasBeenFound(tornPage)) 0.25f else 1.0f,
+    displayHintedIcon = tornPageState.hinted,
+    onClick = { state.attemptToAddImportantCheck(tornPage) }
   )
 }
 

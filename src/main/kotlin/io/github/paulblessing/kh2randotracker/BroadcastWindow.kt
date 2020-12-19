@@ -25,8 +25,8 @@ import androidx.compose.ui.unit.dp
 }
 
 @Composable private fun CountSummariesRow(state: TrackerState) {
-  val foundReports = AnsemReport.values().toSet() - state.unfoundImportantChecks
-  val foundPages = TornPage.values().toSet() - state.unfoundImportantChecks
+  val foundReports = AnsemReport.values().count { ansemReport -> state.importantCheckHasBeenFound(ansemReport) }
+  val foundPages = TornPage.values().count { tornPage -> state.importantCheckHasBeenFound(tornPage) }
   Row(
     Modifier.height(36.dp).fillMaxWidth().padding(horizontal = 8.dp, vertical = 2.dp),
     verticalAlignment = Alignment.CenterVertically,
@@ -35,11 +35,11 @@ import androidx.compose.ui.unit.dp
     val iconSet = AmbientImportantCheckIconSet.current
     Row(verticalAlignment = Alignment.CenterVertically) {
       Image(imageFromResource(iconSet.icons.getValue(AnsemReport.Report1)))
-      ReportOrPageCounter(found = foundReports.size, total = 13)
+      ReportOrPageCounter(found = foundReports, total = 13)
     }
     Row(verticalAlignment = Alignment.CenterVertically) {
       Image(imageFromResource(iconSet.icons.getValue(TornPage.TornPage1)))
-      ReportOrPageCounter(found = foundPages.size, total = 5)
+      ReportOrPageCounter(found = foundPages, total = 5)
     }
     ReportOrPageCounter(
       found = state.foundImportantChecksConsideredImportantCount,
@@ -98,7 +98,7 @@ import androidx.compose.ui.unit.dp
 }
 
 @Composable private fun BroadcastMagicIndicator(magics: Set<Magic>, state: TrackerState) {
-  val magicLevel = (magics - state.unfoundImportantChecks).size // TODO: More efficient way of this?
+  val magicLevel = magics.count { magic -> state.importantCheckHasBeenFound(magic) }
   MagicIndicator(
     magic = magics.first(),
     magicLevel = magicLevel,

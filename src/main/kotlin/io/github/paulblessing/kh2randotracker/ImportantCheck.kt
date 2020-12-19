@@ -121,7 +121,15 @@ object PromiseCharm : ImportantCheck {
 
 }
 
-sealed class ImportantCheckState(val importantCheck: ImportantCheck, val consideredImportant: Boolean)
+sealed class ImportantCheckState(val importantCheck: ImportantCheck, val consideredImportant: Boolean) {
+
+  @delegate:Transient
+  var found: Boolean by mutableStateOf(false)
+
+  @delegate:Transient
+  var hinted: Boolean by mutableStateOf(false)
+
+}
 
 @JsonClass(generateAdapter = true)
 class AnsemReportState(

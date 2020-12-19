@@ -51,6 +51,7 @@ import androidx.compose.ui.unit.dp
   driveFormLevel: Int = 0,
   displayLevelZero: Boolean = false,
   imageAlpha: Float = 1.0f,
+  displayHintedIcon: Boolean = false,
   onClick: (() -> Unit)? = null,
   onAdjustDriveFormLevel: ((adjustment: Int) -> Unit)? = null
 ) {
@@ -59,6 +60,14 @@ import androidx.compose.ui.unit.dp
     imageAlpha = imageAlpha,
     onClick = onClick,
     onScrollWheel = onAdjustDriveFormLevel,
+    topStart = {
+      if (displayHintedIcon) {
+        Image(
+          imageFromResource(AmbientImportantCheckIconSet.current.icons.getValue(AnsemReport.Report1)),
+          Modifier.size(16.dp)
+        )
+      }
+    },
     bottomEnd = {
       if (driveFormLevel > 0 || displayLevelZero) {
         Image(imageFromResource(imagesByNumber[driveFormLevel]), Modifier.size(16.dp))
@@ -70,12 +79,21 @@ import androidx.compose.ui.unit.dp
 @Composable fun OtherImportantCheckIndicator(
   importantCheck: ImportantCheck,
   imageAlpha: Float = 1.0f,
+  displayHintedIcon: Boolean = false,
   onClick: (() -> Unit)? = null
 ) {
   ImportantCheckIndicator(
     importantCheck = importantCheck,
     imageAlpha = imageAlpha,
-    onClick = onClick
+    onClick = onClick,
+    topStart = {
+      if (displayHintedIcon) {
+        Image(
+          imageFromResource(AmbientImportantCheckIconSet.current.icons.getValue(AnsemReport.Report1)),
+          Modifier.size(16.dp)
+        )
+      }
+    },
   )
 }
 
