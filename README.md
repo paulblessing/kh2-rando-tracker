@@ -50,7 +50,10 @@ Tracker window                | Broadcast window
   - Can do this in any place the drive form appears in the tracker window
   - Can do this to indicate form levels gained using auto forms before the actual drive form has been obtained
 - Place items in the Garden of Assemblage location to indicate that they were items that were in the 3 GoA chests or
-  items that you started the seed with
+  items that you started the seed with. Can also use this as a place to put Second Chance and Once More if they were
+  found on keyblades.
+- Drive forms and torn pages placed in locations with a revealed hint will display an Ansem report icon indicating that
+  form or page was hinted, making it easier to determine if all drive forms or torn pages have been hinted.
 
 #### Broadcast window
 
@@ -61,6 +64,8 @@ Tracker window                | Broadcast window
 
 - The tracker automatically saves progress on exit. Use File -> Reset to reset the tracker in order to select a new hint
   file.
+- If a reset happens accidentally, use File -> Restore from auto save to return the tracker to its state before the
+  reset
 - The icons for locations and items can be configured separately to use different icon sets using the Options menu
   - "classic" icons that closely resemble those in the game
   - "minimal"/simplified icons
@@ -70,4 +75,4 @@ Tracker window                | Broadcast window
 - Drag and drop support
 - Remember window positions and sizes
 - Add progression support to indicate how far you've gone in each world
-- Investigate Windows/Linux executables
+- Investigate bundled executables rather than a .jar file
