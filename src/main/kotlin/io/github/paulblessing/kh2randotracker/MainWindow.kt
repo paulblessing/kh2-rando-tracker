@@ -79,16 +79,10 @@ import androidx.compose.ui.unit.dp
         },
         onScrollWheel = { adjustment ->
           val currentProgression = locationState.progression
-          // TODO: Use the progression images
-//          if (adjustment > 0 && currentProgression < location.progressionImages.size) {
-//            locationState.progression += adjustment
-//          } else if (adjustment < 0 && currentProgression > 0) {
-//            locationState.progression += adjustment
-//          }
-          if (adjustment > 0 && currentProgression == 0) {
-            locationState.progression = 1
-          } else if (adjustment < 0 && currentProgression == 1) {
-            locationState.progression = 0
+          if (adjustment > 0 && currentProgression < location.progressionImages.size + 1) {
+            locationState.progression += adjustment
+          } else if (adjustment < 0 && currentProgression > 0) {
+            locationState.progression += adjustment
           }
         }
       )

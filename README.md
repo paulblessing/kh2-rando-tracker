@@ -45,7 +45,7 @@ Tracker window                | Broadcast window
   - Click an item to mark that item as collected in the active location
   - Click a marked item to return it to the pool
   - Click a correctly placed Ansem report to display its hint text again
-- Use the scroll wheel to update a location's visited status between visited and un-visited
+- Use the scroll wheel to update a location's progression. See [Progression](Progression.md) for a detailed explanation.
 - Use the scroll wheel on a drive form item to adjust the form's level
   - Can do this in any place the drive form appears in the tracker window
   - Can do this to indicate form levels gained using auto forms before the actual drive form has been obtained
@@ -74,5 +74,4 @@ Tracker window                | Broadcast window
 
 - Drag and drop support
 - Remember window positions and sizes
-- Add progression support to indicate how far you've gone in each world
 - Investigate bundled executables rather than a .jar file

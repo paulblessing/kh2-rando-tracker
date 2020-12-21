@@ -163,6 +163,17 @@ enum class ImportantCheckLocation(
   HollowBastion(
     id = 5002,
     displayName = "Hollow Bastion",
+    progressionImages = listOf(
+      "images/progression/merlin.png",
+      "images/progression/ansem_the_wise.png",
+      "images/progression/crimson_jazz.png",
+      "images/progression/dancer.png",
+      "images/progression/demyx.png",
+      "images/progression/cloud.png",
+      "images/progression/1k.png",
+      "images/progression/sephiroth.png",
+      "images/Mickey_Head.png"
+    ),
     addressStrings = listOf(
       "11CDFF3A",
       "11CDFF46",
@@ -233,6 +244,13 @@ enum class ImportantCheckLocation(
   TwilightTown(
     id = 5003,
     displayName = "Twilight Town",
+    progressionImages = listOf(
+      "images/progression/yen_sid.png",
+      "images/progression/berserker.png",
+      "images/progression/mickey.png",
+      "images/progression/axel.png",
+      "images/Mickey_Head.png",
+    ),
     addressStrings = listOf(
       "11CE022E",
       "11CE023A",
@@ -293,7 +311,13 @@ enum class ImportantCheckLocation(
     id = 5004,
     displayName = "Land of Dragons",
     progressionImages = listOf(
-      "images/secondary/chest.png"
+      "images/progression/chest.png",
+      "images/progression/assault_rider.png",
+      "images/progression/rapid_thruster.png",
+      "images/progression/shan_yu.png",
+      "images/progression/emperor.png",
+      "images/progression/storm_rider.png",
+      "images/Mickey_Head.png",
     ),
     addressStrings = listOf(
       "11CDF72A",
@@ -332,6 +356,15 @@ enum class ImportantCheckLocation(
   BeastCastle(
     id = 5005,
     displayName = "Beast's Castle",
+    progressionImages = listOf(
+      "images/progression/wardrobe.png",
+      "images/progression/thresholder.png",
+      "images/progression/beast.png",
+      "images/progression/dark_thorn.png",
+      "images/progression/dragoon.png",
+      "images/progression/xaldin.png",
+      "images/Mickey_Head.png",
+    ),
     addressStrings = listOf(
       "11CDFBF2",
       "11CDFBFE",
@@ -370,7 +403,14 @@ enum class ImportantCheckLocation(
     id = 5006,
     displayName = "Olympus Coliseum",
     progressionImages = listOf(
-      "images/secondary/chest.png"
+      "images/progression/chest.png",
+      "images/progression/cerberus.png",
+      "images/progression/demyx.png",
+      "images/progression/pete.png",
+      "images/progression/hydra.png",
+      "images/progression/dusk.png",
+      "images/progression/hades.png",
+      "images/Mickey_Head.png",
     ),
     addressStrings = listOf(
       "11CDFB02",
@@ -424,7 +464,12 @@ enum class ImportantCheckLocation(
     id = 5007,
     displayName = "Space Paranoids",
     progressionImages = listOf(
-      "images/secondary/chest.png"
+      "images/progression/chest.png",
+      "images/progression/screens.png",
+      "images/progression/hostile_program.png",
+      "images/progression/devastator.png",
+      "images/progression/master_control_program.png",
+      "images/Mickey_Head.png",
     ),
     addressStrings = listOf(
       "11CDFCEE",
@@ -453,6 +498,15 @@ enum class ImportantCheckLocation(
   HalloweenTown(
     id = 5008,
     displayName = "Halloween Town",
+    progressionImages = listOf(
+      "images/progression/chest.png",
+      "images/progression/toy_soldier.png",
+      "images/progression/prison_keeper.png",
+      "images/progression/oogie_boogie.png",
+      "images/progression/presents.png",
+      "images/progression/experiment.png",
+      "images/Mickey_Head.png",
+    ),
     addressStrings = listOf(
       "11CDFD96",
       "11CDFDA2",
@@ -483,10 +537,12 @@ enum class ImportantCheckLocation(
     id = 5009,
     displayName = "Port Royal",
     progressionImages = listOf(
-      "images/secondary/chest.png",
-      "images/One.png",
-      "images/Two.png",
-      "images/nobody/luxord.png"
+      "images/progression/chest.png",
+      "images/progression/cannon_gun.png",
+      "images/progression/barbossa.png",
+      "images/progression/gambler.png",
+      "images/progression/grim_reaper.png",
+      "images/Mickey_Head.png",
     ),
     addressStrings = listOf(
       "11CDFE3E",
@@ -527,6 +583,16 @@ enum class ImportantCheckLocation(
   Agrabah(
     id = 5010,
     displayName = "Agrabah",
+    progressionImages = listOf(
+      "images/progression/chest.png",
+      "images/progression/abu.png",
+      "images/progression/chasm_of_challenges.png",
+      "images/progression/treasure_room.png",
+      "images/progression/blizzard_lord.png",
+      "images/progression/carpet.png",
+      "images/progression/genie_jafar.png",
+      "images/Mickey_Head.png",
+    ),
     addressStrings = listOf(
       "11CDF826",
       "11CDF832",
@@ -569,6 +635,14 @@ enum class ImportantCheckLocation(
   PrideLands(
     id = 5011,
     displayName = "Pride Lands",
+    progressionImages = listOf(
+      "images/progression/chest.png",
+      "images/progression/simba.png",
+      "images/progression/hyenas.png",
+      "images/progression/scar.png",
+      "images/progression/groundshaker.png",
+      "images/Mickey_Head.png",
+    ),
     addressStrings = listOf(
       "11CE0042",
       "11CE004E",
@@ -606,6 +680,15 @@ enum class ImportantCheckLocation(
   DisneyCastle(
     id = 5012,
     displayName = "Disney Castle",
+    progressionImages = listOf(
+      "images/progression/chest.png",
+      "images/progression/minnie.png",
+      "images/progression/old_pete.png",
+      "images/progression/hot_rod.png",
+      "images/progression/pete_pete.png",
+      "images/progression/marluxia.png",
+      "images/Mickey_Head.png",
+    ),
     addressStrings = listOf(
       "11CDF9B2",
       "11CDF9BE",
@@ -642,12 +725,12 @@ enum class ImportantCheckLocation(
     id = 5013,
     displayName = "100 Acre Wood",
     progressionImages = listOf(
-      "images/One.png",
-      "images/Two.png",
-      "images/Three.png",
-      "images/Four.png",
-      "images/Five.png",
-      "images/Six.png"
+      "images/progression/pooh.png",
+      "images/progression/piglet.png",
+      "images/progression/rabbit.png",
+      "images/progression/kanga.png",
+      "images/progression/bees.png",
+      "images/Mickey_Head.png",
     ),
     addressStrings = listOf(
       "11CDFA12",
@@ -680,6 +763,11 @@ enum class ImportantCheckLocation(
   SimulatedTwilightTown(
     id = 5014,
     displayName = "Simulated Twilight Town",
+    progressionImages = listOf(
+      "images/progression/computer_room.png",
+      "images/progression/axel.png",
+      "images/Mickey_Head.png",
+    ),
     addressStrings = listOf(
       "11CE016E",
       "11CE017A",
@@ -716,13 +804,13 @@ enum class ImportantCheckLocation(
     id = 5015,
     displayName = "The World that Never Was",
     progressionImages = listOf(
-      "images/secondary/chest.png",
-      "images/nobody/roxas.png",
-      "images/nobody/xigbar.png",
-      "images/nobody/luxord.png",
-      "images/nobody/saix.png",
-      "images/nobody/kingdom_hearts.png",
-      "images/nobody/xemnas.png",
+      "images/progression/chest.png",
+      "images/progression/roxas.png",
+      "images/progression/xigbar.png",
+      "images/progression/luxord.png",
+      "images/progression/saix.png",
+      "images/progression/xemnas.png",
+      "images/Mickey_Head.png",
     ),
     addressStrings = listOf(
       "11CE0402",
