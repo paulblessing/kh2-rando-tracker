@@ -16,7 +16,7 @@ import androidx.compose.ui.window.Dialog
 ) {
   Dialog(
     onDismissRequest,
-    properties = DesktopDialogProperties(title = "Reset tracker?", size = IntSize(400, 120))
+    properties = DesktopDialogProperties(title = "Reset tracker?", size = IntSize(400, 160))
   ) {
     MaterialTheme(colors = darkColors()) {
       Surface(Modifier.fillMaxSize()) {

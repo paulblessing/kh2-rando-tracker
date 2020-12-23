@@ -10,7 +10,7 @@ plugins {
 }
 
 group = "io.github.paulblessing"
-version = "1.0.2"
+version = "1.0.3"
 
 repositories {
   jcenter()
@@ -50,7 +50,7 @@ compose.desktop {
   application {
     mainClass = "io.github.paulblessing.kh2randotracker.Tracker"
     nativeDistributions {
-      targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
+      targetFormats(TargetFormat.Msi)
       packageName = "KH2 Randomizer Tracker"
       description = "KH2 Randomizer Tracker"
       copyright = "© 2020 Paul Blessing"
@@ -58,6 +58,15 @@ compose.desktop {
 
       macOS {
         iconFile.set(file("src/main/resources/images/classic/replica_data.icns"))
+      }
+
+      windows {
+        shortcut = true
+        iconFile.set(file("src/main/resources/images/classic/replica_data.ico"))
+      }
+
+      linux {
+        iconFile.set(file("src/main/resources/images/classic/replica_data.png"))
       }
     }
   }

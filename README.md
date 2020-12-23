@@ -74,4 +74,3 @@ Tracker window                | Broadcast window
 
 - Drag and drop support
 - Remember window positions and sizes
-- Investigate bundled executables rather than a .jar file

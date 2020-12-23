@@ -51,10 +51,13 @@ fun main() {
     var aboutDialogShowing: Boolean by mutableStateOf(false)
     var confirmResetDialogShowing: Boolean by mutableStateOf(false)
 
-    Desktop.getDesktop().setQuitHandler { _, response ->
-      // TODO: Dialog or something?
-      SavedState.save(stateHolder.value, importantCheckLocationIconSet, importantCheckIconSet)
-      response.performQuit()
+    val desktop = Desktop.getDesktop()
+    if (desktop.isSupported(Desktop.Action.APP_QUIT_HANDLER)) {
+      desktop.setQuitHandler { _, response ->
+        // TODO: Dialog or something?
+        SavedState.save(stateHolder.value, importantCheckLocationIconSet, importantCheckIconSet)
+        response.performQuit()
+      }
     }
 
     AppManager.setEvents(onWindowsEmpty = {

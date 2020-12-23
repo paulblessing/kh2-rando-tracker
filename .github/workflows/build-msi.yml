@@ -1,0 +1,32 @@
+name: Build msi
+
+on:
+  workflow_dispatch:
+    inputs:
+      tags:
+        required: true
+        description: 'Version name'
+
+jobs:
+  packageExe:
+    runs-on: windows-latest
+    steps:
+      - id: checkout-code
+        name: Checkout code
+        uses: actions/checkout@v2
+
+      - id: setup-jdk
+        name: Setup JDK
+        uses: actions/setup-java@v1
+        with:
+          java-version: 14
+
+      - id: build
+        name: Build distribution
+        run: |
+          ./gradlew package
+
+      - uses: actions/upload-artifact@v2
+        with:
+          name: Package
+          path: build/compose
