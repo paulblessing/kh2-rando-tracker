@@ -42,29 +42,32 @@ import androidx.compose.ui.unit.dp
 
     AvailableCheckRow(AnsemReport.values().toList(), state)
 
-    val fires = listOf(Magic.Fire1, Magic.Fire2, Magic.Fire3)
-    val blizzards = listOf(Magic.Blizzard1, Magic.Blizzard2, Magic.Blizzard3)
-    val thunders = listOf(Magic.Thunder1, Magic.Thunder2, Magic.Thunder3)
+    val fires = Magic.fires
+    val blizzards = Magic.blizzards
+    val thunders = Magic.thunders
     AvailableCheckRow(DriveForm.values().toList() + fires + blizzards + thunders, state)
 
-    val cures = listOf(Magic.Cure1, Magic.Cure2, Magic.Cure3)
-    val reflects = listOf(Magic.Reflect1, Magic.Reflect2, Magic.Reflect3)
-    val magnets = listOf(Magic.Magnet1, Magic.Magnet2, Magic.Magnet3)
-    AvailableCheckRow(cures + reflects + magnets + Summon.values(), state)
+    val cures = Magic.cures
+    val reflects = Magic.reflects
+    val magnets = Magic.magnets
+    AvailableCheckRow(GrowthAbility.values().toList() + cures + reflects + magnets, state)
 
-    AvailableCheckRow(TornPage.values().toList() + ImportantAbility.values() + PromiseCharm + Proof.values(), state)
+    AvailableCheckRow(
+      TornPage.values().toList() + Summon.values() + ImportantAbility.values() + PromiseCharm + Proof.values(),
+      state
+    )
   }
 }
 
 @Composable fun ImportantCheckLocationSection(locationState: ImportantCheckLocationState, state: TrackerState) {
   val location = locationState.location
   val activeLocation = location == state.activeLocation
-  Box(Modifier.width(320.dp)) {
+  Box(Modifier.width(scaledSize(320.dp))) {
     Row(verticalAlignment = Alignment.CenterVertically) {
       ImportantCheckLocationIndicator(
         locationState,
         state,
-        width = 80.dp,
+        width = scaledSize(80.dp),
         showFoundChecks = true,
         onClick = {
           if (activeLocation) {
@@ -89,7 +92,7 @@ import androidx.compose.ui.unit.dp
 
       Image(
         imageFromResource("images/VerticalBarWhite.png"),
-        Modifier.size(width = 2.dp, height = 64.dp),
+        Modifier.size(width = 2.dp, height = scaledSize(64.dp)),
         contentScale = ContentScale.FillHeight
       )
 
@@ -122,6 +125,15 @@ import androidx.compose.ui.unit.dp
         when (importantCheck) {
           is AnsemReport -> AvailableAnsemReportIndicator(importantCheck, state)
           is DriveForm -> AvailableDriveFormIndicator(importantCheck, state)
+          is GrowthAbility -> {
+            when (importantCheck) {
+              GrowthAbility.HighJump1 -> AvailableGrowthAbilityIndicator(GrowthAbility.highJumps, state)
+              GrowthAbility.QuickRun1 -> AvailableGrowthAbilityIndicator(GrowthAbility.quickRuns, state)
+              GrowthAbility.DodgeRoll1 -> AvailableGrowthAbilityIndicator(GrowthAbility.dodgeRolls, state)
+              GrowthAbility.AerialDodge1 -> AvailableGrowthAbilityIndicator(GrowthAbility.aerialDodges, state)
+              GrowthAbility.Glide1 -> AvailableGrowthAbilityIndicator(GrowthAbility.glides, state)
+            }
+          }
           is TornPage -> AvailableTornPageIndicator(importantCheck, state)
           else -> AvailableOtherImportantCheckIndicator(importantCheck, state)
         }
@@ -189,6 +201,23 @@ import androidx.compose.ui.unit.dp
     },
     onAdjustDriveFormLevel = { adjustment ->
       driveFormState.driveFormLevel = (driveFormState.driveFormLevel + adjustment).coerceIn(0, 7)
+    }
+  )
+}
+
+@Composable private fun AvailableGrowthAbilityIndicator(growthAbilities: Set<GrowthAbility>, state: TrackerState) {
+  val growthAbilityStates = growthAbilities.map { growthAbility -> state[growthAbility] }
+  val growthAbilityLevel = growthAbilityStates.count { it.found }
+  GrowthAbilityIndicator(
+    growthAbility = growthAbilities.first(),
+    growthAbilityLevel = growthAbilityLevel,
+    imageAlpha = if (growthAbilityLevel == 4) 0.25f else 1.0f,
+    displayLevelZero = true,
+    onClick = {
+      val firstUnfound = growthAbilityStates.firstOrNull { !it.found }
+      if (firstUnfound != null) {
+        state.attemptToAddImportantCheck(firstUnfound.importantCheck)
+      }
     }
   )
 }

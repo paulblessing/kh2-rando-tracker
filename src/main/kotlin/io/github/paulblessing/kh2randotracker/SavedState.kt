@@ -10,7 +10,8 @@ import java.io.File
 class SavedState(
   val trackerState: TrackerState?,
   val importantCheckLocationIconSet: String,
-  val importantCheckIconSet: String
+  val importantCheckIconSet: String,
+  val uiState: UiState = UiState()
 ) {
 
   companion object {
@@ -20,15 +21,22 @@ class SavedState(
       moshi.adapter(SavedState::class.java)
     }
 
-    private val saveStateFile: File by lazy {
-      val trackerDirectory = File(System.getProperty("user.home"), ".kh2-rando-tracker")
+    private val trackerDirectory: File by lazy {
+      val override = System.getProperty("trackerDirectory")
+      val trackerDirectory = if (override == null) {
+        File(System.getProperty("user.home"), ".kh2-rando-tracker")
+      } else {
+        File(override)
+      }
       trackerDirectory.mkdirs()
+      trackerDirectory
+    }
+
+    private val saveStateFile: File by lazy {
       File(trackerDirectory, "saved-state.json")
     }
 
     private val autoSaveStateFile: File by lazy {
-      val trackerDirectory = File(System.getProperty("user.home"), ".kh2-rando-tracker")
-      trackerDirectory.mkdirs()
       File(trackerDirectory, "auto-saved-state.json")
     }
 
@@ -55,29 +63,33 @@ class SavedState(
     fun save(
       state: TrackerState?,
       importantCheckLocationIconSet: ImportantCheckLocationIconSet,
-      importantCheckIconSet: ImportantCheckIconSet
+      importantCheckIconSet: ImportantCheckIconSet,
+      uiState: UiState
     ) {
-      save(saveStateFile, state, importantCheckLocationIconSet, importantCheckIconSet)
+      save(saveStateFile, state, importantCheckLocationIconSet, importantCheckIconSet, uiState)
     }
 
     fun autoSave(
       state: TrackerState?,
       importantCheckLocationIconSet: ImportantCheckLocationIconSet,
-      importantCheckIconSet: ImportantCheckIconSet
+      importantCheckIconSet: ImportantCheckIconSet,
+      uiState: UiState
     ) {
-      save(autoSaveStateFile, state, importantCheckLocationIconSet, importantCheckIconSet)
+      save(autoSaveStateFile, state, importantCheckLocationIconSet, importantCheckIconSet, uiState)
     }
 
     private fun save(
       file: File,
       state: TrackerState?,
       importantCheckLocationIconSet: ImportantCheckLocationIconSet,
-      importantCheckIconSet: ImportantCheckIconSet
+      importantCheckIconSet: ImportantCheckIconSet,
+      uiState: UiState
     ) {
       val savedState = SavedState(
         state,
         importantCheckLocationIconSet = importantCheckLocationIconSet.name,
-        importantCheckIconSet = importantCheckIconSet.name
+        importantCheckIconSet = importantCheckIconSet.name,
+        uiState = uiState
       )
       file.sink().buffer().use { sink ->
         savedStateAdapter.toJson(sink, savedState)
@@ -127,7 +139,8 @@ class SavedStateAdapter {
     return when (id) {
       in 100 until 200 -> AnsemReport.values().first { it.id == id }
       in 200 until 300 -> Magic.values().first { it.id == id }
-      in 300 until 400 -> DriveForm.values().first { it.id == id }
+      in 300 until 350 -> DriveForm.values().first { it.id == id }
+      in 350 until 400 -> GrowthAbility.values().first { it.id == id }
       in 400 until 500 -> ImportantAbility.values().first { it.id == id }
       in 500 until 600 -> TornPage.values().first { it.id == id }
       in 600 until 700 -> Summon.values().first { it.id == id }

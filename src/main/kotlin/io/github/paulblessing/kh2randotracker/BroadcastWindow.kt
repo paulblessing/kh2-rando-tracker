@@ -10,15 +10,19 @@ import androidx.compose.ui.unit.dp
 
 @Composable fun BroadcastWindow(state: TrackerState) {
   Column(verticalArrangement = Arrangement.SpaceEvenly) {
-    FlowRow(mainAxisAlignment = FlowMainAxisAlignment.Center) {
-      for (locationState in state.importantCheckLocationStates.filter { it.location.broadcast && it.enabled }) {
-        ImportantCheckLocationIndicator(locationState, state, width = 80.dp, showFoundChecks = true)
+    val shownLocationStates = state.importantCheckLocationStates.filter { it.location.broadcast && it.enabled }
+    for (rowOfLocationStates in shownLocationStates.chunked(4)) {
+      Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
+        for (locationState in rowOfLocationStates) {
+          ImportantCheckLocationIndicator(locationState, state, width = scaledSize(80.dp), showFoundChecks = true)
+        }
       }
     }
 
     CountSummariesRow(state)
     MagicRow(state)
     DriveFormRow(state)
+    GrowthAbilityRow(state)
     SummonRow(state)
     ProofsAndOthersRow(state)
   }
@@ -68,12 +72,12 @@ import androidx.compose.ui.unit.dp
 @Composable private fun MagicRow(state: TrackerState) {
   Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
     val items = listOf(
-      setOf(Magic.Fire1, Magic.Fire2, Magic.Fire3),
-      setOf(Magic.Blizzard1, Magic.Blizzard2, Magic.Blizzard3),
-      setOf(Magic.Thunder1, Magic.Thunder2, Magic.Thunder3),
-      setOf(Magic.Cure1, Magic.Cure2, Magic.Cure3),
-      setOf(Magic.Reflect1, Magic.Reflect2, Magic.Reflect3),
-      setOf(Magic.Magnet1, Magic.Magnet2, Magic.Magnet3),
+      Magic.fires,
+      Magic.blizzards,
+      Magic.thunders,
+      Magic.cures,
+      Magic.reflects,
+      Magic.magnets,
     )
     for (item in items) {
       BroadcastMagicIndicator(item, state)
@@ -85,6 +89,21 @@ import androidx.compose.ui.unit.dp
   Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
     for (item in DriveForm.values()) {
       BroadcastDriveFormIndicator(item, state)
+    }
+  }
+}
+
+@Composable private fun GrowthAbilityRow(state: TrackerState) {
+  Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
+    val items = listOf(
+      GrowthAbility.highJumps,
+      GrowthAbility.quickRuns,
+      GrowthAbility.dodgeRolls,
+      GrowthAbility.aerialDodges,
+      GrowthAbility.glides
+    )
+    for (item in items) {
+      BroadcastGrowthAbilityIndicator(item, state)
     }
   }
 }
@@ -114,6 +133,16 @@ import androidx.compose.ui.unit.dp
     driveFormLevel = driveFormState.driveFormLevel,
     displayLevelZero = driveAcquired,
     imageAlpha = if (driveAcquired) 1.0f else 0.25f
+  )
+}
+
+@Composable private fun BroadcastGrowthAbilityIndicator(growthAbilities: Set<GrowthAbility>, state: TrackerState) {
+  val growthAbilityLevel = growthAbilities.count { growthAbility -> state.importantCheckHasBeenFound(growthAbility) }
+  GrowthAbilityIndicator(
+    growthAbility = growthAbilities.first(),
+    growthAbilityLevel = growthAbilityLevel,
+    displayLevelZero = false,
+    imageAlpha = if (growthAbilityLevel > 0) 1.0f else 0.25f
   )
 }
 

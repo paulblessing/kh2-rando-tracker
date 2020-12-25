@@ -1,4 +1,4 @@
-name: Build msi
+name: Build MSI Installer
 
 on:
   workflow_dispatch:
@@ -8,7 +8,7 @@ on:
         description: 'Version name'
 
 jobs:
-  packageExe:
+  packageMsi:
     runs-on: windows-latest
     steps:
       - id: checkout-code

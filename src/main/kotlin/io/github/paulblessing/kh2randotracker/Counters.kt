@@ -37,7 +37,7 @@ val imagesByNumber = listOf(
 ).map { "images/${it}.png" }
 
 @Composable fun ReportOrPageCounter(found: Int, total: Int) {
-  Row(Modifier.height(16.dp), verticalAlignment = Alignment.CenterVertically) {
+  Row(Modifier.height(scaledSize(16.dp)), verticalAlignment = Alignment.CenterVertically) {
     val foundTens = found / 10
     val foundOnes = found - (foundTens * 10)
     if (foundTens > 0) {
@@ -80,7 +80,7 @@ val imagesByNumber = listOf(
   hintRevealed: Boolean,
   modifier: Modifier = Modifier
 ) {
-  Row(modifier.height(20.dp), verticalAlignment = Alignment.CenterVertically) {
+  Row(modifier.height(scaledSize(20.dp)), verticalAlignment = Alignment.CenterVertically) {
     if (showFoundChecks) {
       if (hintRevealed && totalImportantChecks == 0) {
         // Nothing - want to just show the heartless symbol

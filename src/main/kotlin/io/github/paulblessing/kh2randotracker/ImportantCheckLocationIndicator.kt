@@ -15,7 +15,7 @@ import androidx.compose.ui.unit.dp
 @Composable fun ImportantCheckLocationIndicator(
   locationState: ImportantCheckLocationState,
   state: TrackerState,
-  width: Dp = 64.dp,
+  width: Dp = scaledSize(64.dp),
   showFoundChecks: Boolean = false,
   onClick: (() -> Unit)? = null,
   onScrollWheel: ((adjustment: Int) -> Unit)? = null
@@ -23,7 +23,7 @@ import androidx.compose.ui.unit.dp
   val location = locationState.location
   val staticProgression = location.staticProgression
   Box(
-    Modifier.size(width = width, height = 64.dp)
+    Modifier.size(width = width, height = scaledSize(64.dp))
       .let { modifier ->
         if (onClick == null) modifier else modifier.clickable(indication = null) { onClick() }
       }
@@ -39,7 +39,7 @@ import androidx.compose.ui.unit.dp
     val iconSet = AmbientImportantCheckLocationIconSet.current
     Image(
       imageFromResource(iconSet.icons.getValue(location)),
-      Modifier.size(48.dp),
+      Modifier.size(scaledSize(48.dp)),
       alpha = when {
         staticProgression -> 1.0f
         locationState.progression == 0 -> 0.25f

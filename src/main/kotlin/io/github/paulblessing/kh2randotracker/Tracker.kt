@@ -22,6 +22,7 @@ import java.io.File
 import javax.imageio.ImageIO
 import javax.swing.SwingUtilities
 import javax.swing.TransferHandler
+import kotlin.math.roundToInt
 import kotlin.system.exitProcess
 
 val AmbientImportantCheckLocationIconSet = staticAmbientOf<ImportantCheckLocationIconSet> {
@@ -30,41 +31,27 @@ val AmbientImportantCheckLocationIconSet = staticAmbientOf<ImportantCheckLocatio
 val AmbientImportantCheckIconSet = staticAmbientOf<ImportantCheckIconSet> {
   error("No important check icon set has been set")
 }
+val AmbientIconScale = staticAmbientOf<Float> {
+  error("No icon scale has been set")
+}
 
 fun main() {
   val savedState = SavedState.load()
   val trackerState = savedState?.trackerState
-  val savedLocationIconSet = when (savedState?.importantCheckLocationIconSet) {
-    "classic" -> ImportantCheckLocationIconSet.classic
-    else -> ImportantCheckLocationIconSet.simple
-  }
-  val savedCheckIconSet = when (savedState?.importantCheckIconSet) {
-    "classic" -> ImportantCheckIconSet.classic
-    else -> ImportantCheckIconSet.simple
-  }
+  val savedLocationIconSet = ImportantCheckLocationIconSet.byName(savedState?.importantCheckLocationIconSet)
+  val savedCheckIconSet = ImportantCheckIconSet.byName(savedState?.importantCheckIconSet)
+  val savedUiState = savedState?.uiState ?: UiState()
 
   SwingUtilities.invokeLater {
     val stateHolder = mutableStateOf(trackerState)
     val hintLoadingErrorHolder = mutableStateOf<Throwable?>(null)
     var importantCheckLocationIconSet: ImportantCheckLocationIconSet by mutableStateOf(savedLocationIconSet)
     var importantCheckIconSet: ImportantCheckIconSet by mutableStateOf(savedCheckIconSet)
+    var trackerWindowSize: SizeClass by mutableStateOf(savedUiState.trackerWindowSizeClass)
+    var broadcastWindowSize: SizeClass by mutableStateOf(savedUiState.broadcastWindowSizeClass)
+    var settingsDialogShowing: Boolean by mutableStateOf(false)
     var aboutDialogShowing: Boolean by mutableStateOf(false)
     var confirmResetDialogShowing: Boolean by mutableStateOf(false)
-
-    val desktop = Desktop.getDesktop()
-    if (desktop.isSupported(Desktop.Action.APP_QUIT_HANDLER)) {
-      desktop.setQuitHandler { _, response ->
-        // TODO: Dialog or something?
-        SavedState.save(stateHolder.value, importantCheckLocationIconSet, importantCheckIconSet)
-        response.performQuit()
-      }
-    }
-
-    AppManager.setEvents(onWindowsEmpty = {
-      // TODO: Dialog or something?
-      SavedState.save(stateHolder.value, importantCheckLocationIconSet, importantCheckIconSet)
-      exitProcess(0)
-    })
 
     val dummy = MenuItem("-----", onClick = { })
     val reset = MenuItem("Reset", onClick = {
@@ -81,10 +68,10 @@ fun main() {
     })
     val fileMenu = Menu("File", dummy, reset, restoreFromAutoSave)
 
-    val optionsMenu = buildOptionsMenu(
-      onImportantCheckLocationIconSetSelected = { importantCheckLocationIconSet = it },
-      onImportantCheckIconSetSelected = { importantCheckIconSet = it }
-    )
+    val options = MenuItem("Options", onClick = {
+      settingsDialogShowing = true
+    })
+    val optionsMenu = Menu("Options", options)
 
     val about = MenuItem("About tracker", onClick = {
       aboutDialogShowing = true
@@ -93,16 +80,65 @@ fun main() {
 
     val menuBar = MenuBar(fileMenu, optionsMenu, aboutMenu)
 
+    val trackerWindowMetrics = savedUiState.trackerWindowMetrics
     val trackerWindow = AppWindow(
       title = "KH2 Randomizer Tracker",
       centered = false,
-      location = IntOffset(100, 50),
-      size = IntSize(640, 800),
+      location = IntOffset(x = trackerWindowMetrics.x, y = trackerWindowMetrics.y),
+      size = IntSize(width = trackerWindowMetrics.width, height = trackerWindowMetrics.height),
       icon = getIcon(),
       menuBar = menuBar
     )
+
+    val broadcastWindowMetrics = savedUiState.broadcastWindowMetrics
+    val broadcastWindow = AppWindow(
+      title = "KH2 Randomizer Broadcast",
+      centered = false,
+      location = IntOffset(x = broadcastWindowMetrics.x, y = broadcastWindowMetrics.y),
+      size = IntSize(width = broadcastWindowMetrics.width, height = broadcastWindowMetrics.height),
+      menuBar = menuBar
+    )
+
+    val getUiState = {
+      UiState(
+        trackerWindowSizeClass = trackerWindowSize,
+        trackerWindowMetrics = WindowSizeAndPosition(
+          x = trackerWindow.x,
+          y = trackerWindow.y,
+          width = trackerWindow.width,
+          height = trackerWindow.height
+        ),
+        broadcastWindowSizeClass = broadcastWindowSize,
+        broadcastWindowMetrics = WindowSizeAndPosition(
+          x = broadcastWindow.x,
+          y = broadcastWindow.y,
+          width = broadcastWindow.width,
+          height = broadcastWindow.height
+        )
+      )
+    }
+
+    val saveState = {
+      val uiState = getUiState()
+      // TODO: Dialog or something?
+      SavedState.save(stateHolder.value, importantCheckLocationIconSet, importantCheckIconSet, uiState)
+    }
+
+    val desktop = Desktop.getDesktop()
+    if (desktop.isSupported(Desktop.Action.APP_QUIT_HANDLER)) {
+      desktop.setQuitHandler { _, response ->
+        saveState()
+        response.performQuit()
+      }
+    }
+
+    AppManager.setEvents(onWindowsEmpty = {
+      saveState()
+      exitProcess(0)
+    })
+
     trackerWindow.show {
-      TrackerTheme(importantCheckLocationIconSet, importantCheckIconSet) {
+      TrackerTheme(importantCheckLocationIconSet, importantCheckIconSet, trackerWindowSize) {
         Surface(modifier = Modifier.fillMaxSize()) {
           val state = stateHolder.value
           if (state == null) {
@@ -116,6 +152,38 @@ fun main() {
         }
       }
 
+      if (settingsDialogShowing) {
+        SettingsDialog(
+          importantCheckLocationIconSet = importantCheckLocationIconSet.name,
+          onImportantCheckLocationIconSetSelected = { iconSetName ->
+            importantCheckLocationIconSet = ImportantCheckLocationIconSet.byName(iconSetName)
+          },
+          importantCheckIconSet = importantCheckIconSet.name,
+          onImportantCheckIconSetSelected = { iconSetName ->
+            importantCheckIconSet = ImportantCheckIconSet.byName(iconSetName)
+          },
+          trackerWindowSizeClass = trackerWindowSize,
+          onTrackerWindowSizeClassSelected = { size ->
+            val scale = size.scale
+            trackerWindowSize = size
+            trackerWindow.setSize(
+              width = (DEFAULT_TRACKER_WINDOW_WIDTH.toFloat() * scale).roundToInt(),
+              height = (DEFAULT_TRACKER_WINDOW_HEIGHT.toFloat() * scale).roundToInt()
+            )
+          },
+          broadcastWindowSizeClass = broadcastWindowSize,
+          onBroadcastWindowSizeClassSelected = { size ->
+            val scale = size.scale
+            broadcastWindowSize = size
+            broadcastWindow.setSize(
+              width = (DEFAULT_BROADCAST_WINDOW_WIDTH.toFloat() * scale).roundToInt(),
+              height = (DEFAULT_BROADCAST_WINDOW_HEIGHT.toFloat() * scale).roundToInt()
+            )
+          },
+          onDismissRequest = { settingsDialogShowing = false }
+        )
+      }
+
       if (aboutDialogShowing) {
         AboutDialog(onDismissRequest = { aboutDialogShowing = false })
       }
@@ -124,7 +192,8 @@ fun main() {
         ConfirmResetDialog(
           onDismissRequest = { confirmResetDialogShowing = false },
           onResetConfirmed = {
-            SavedState.autoSave(trackerState, importantCheckLocationIconSet, importantCheckIconSet)
+            val uiState = getUiState()
+            SavedState.autoSave(trackerState, importantCheckLocationIconSet, importantCheckIconSet, uiState)
             stateHolder.value = null
             confirmResetDialogShowing = false
           }
@@ -132,15 +201,8 @@ fun main() {
       }
     }
 
-    val broadcastWindow = AppWindow(
-      title = "KH2 Randomizer Broadcast",
-      centered = false,
-      location = IntOffset(900, 200),
-      size = IntSize(320, 500),
-      menuBar = menuBar
-    )
     broadcastWindow.show {
-      TrackerTheme(importantCheckLocationIconSet, importantCheckIconSet) {
+      TrackerTheme(importantCheckLocationIconSet, importantCheckIconSet, broadcastWindowSize) {
         Surface(modifier = Modifier.fillMaxSize()) {
           val state = stateHolder.value
           if (state == null) {
@@ -194,33 +256,16 @@ private fun getIcon(): BufferedImage? {
   return classLoader.getResourceAsStream("images/classic/replica_data.png")?.let(ImageIO::read)
 }
 
-private fun buildOptionsMenu(
-  onImportantCheckLocationIconSetSelected: (ImportantCheckLocationIconSet) -> Unit,
-  onImportantCheckIconSetSelected: (ImportantCheckIconSet) -> Unit
-): Menu {
-  val simpleLocationIcons = MenuItem("Use minimal location icons", onClick = {
-    onImportantCheckLocationIconSetSelected(ImportantCheckLocationIconSet.simple)
-  })
-  val classicLocationIcons = MenuItem("Use classic location icons", onClick = {
-    onImportantCheckLocationIconSetSelected(ImportantCheckLocationIconSet.classic)
-  })
-  val simpleItemIcons = MenuItem("Use minimal item icons", onClick = {
-    onImportantCheckIconSetSelected(ImportantCheckIconSet.simple)
-  })
-  val classicItemIcons = MenuItem("Use classic item icons", onClick = {
-    onImportantCheckIconSetSelected(ImportantCheckIconSet.classic)
-  })
-  return Menu("Options", simpleLocationIcons, classicLocationIcons, simpleItemIcons, classicItemIcons)
-}
-
 @Composable private fun TrackerTheme(
   importantCheckLocationIconSet: ImportantCheckLocationIconSet,
   importantCheckIconSet: ImportantCheckIconSet,
+  sizeClass: SizeClass,
   content: @Composable () -> Unit
 ) {
   Providers(
     AmbientImportantCheckLocationIconSet provides importantCheckLocationIconSet,
-    AmbientImportantCheckIconSet provides importantCheckIconSet
+    AmbientImportantCheckIconSet provides importantCheckIconSet,
+    AmbientIconScale provides sizeClass.scale
   ) {
     MaterialTheme(colors = darkColors()) {
       content()

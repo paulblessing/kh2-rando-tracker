@@ -9,7 +9,7 @@ import androidx.compose.ui.graphics.imageFromResource
 import androidx.compose.ui.unit.dp
 
 @Composable fun ProgressionIndicator(locationState: ImportantCheckLocationState, modifier: Modifier) {
-  Row(modifier.height(24.dp)) {
+  Row(modifier.height(scaledSize(24.dp))) {
     val progression = locationState.progression
     if (progression > 1) {
       val progressionImage = locationState.location.progressionImages.getOrNull(progression - 2)

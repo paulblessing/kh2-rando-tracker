@@ -20,12 +20,12 @@ import androidx.compose.ui.unit.dp
     imageAlpha = imageAlpha,
     onClick = onClick,
     topStart = {
-      Row(Modifier.height(16.dp)) {
+      Row(Modifier.height(scaledSize(16.dp))) {
         repeat(failedAttemptCount) { Image(imageFromResource("images/FailX.png")) }
       }
     },
     bottomEnd = {
-      Image(imageFromResource(imagesByNumber[ansemReport.number]), Modifier.size(16.dp))
+      Image(imageFromResource(imagesByNumber[ansemReport.number]), Modifier.size(scaledSize(16.dp)))
     }
   )
 }
@@ -40,7 +40,7 @@ import androidx.compose.ui.unit.dp
     imageAlpha = imageAlpha,
     bottomEnd = {
       if (magicLevel > 0) {
-        Image(imageFromResource(imagesByNumber[magicLevel]), Modifier.size(16.dp))
+        Image(imageFromResource(imagesByNumber[magicLevel]), Modifier.size(scaledSize(16.dp)))
       }
     }
   )
@@ -64,13 +64,32 @@ import androidx.compose.ui.unit.dp
       if (displayHintedIcon) {
         Image(
           imageFromResource(AmbientImportantCheckIconSet.current.icons.getValue(AnsemReport.Report1)),
-          Modifier.size(16.dp)
+          Modifier.size(scaledSize(16.dp))
         )
       }
     },
     bottomEnd = {
       if (driveFormLevel > 0 || displayLevelZero) {
-        Image(imageFromResource(imagesByNumber[driveFormLevel]), Modifier.size(16.dp))
+        Image(imageFromResource(imagesByNumber[driveFormLevel]), Modifier.size(scaledSize(16.dp)))
+      }
+    }
+  )
+}
+
+@Composable fun GrowthAbilityIndicator(
+  growthAbility: GrowthAbility,
+  growthAbilityLevel: Int = 0,
+  displayLevelZero: Boolean = false,
+  imageAlpha: Float = 1.0f,
+  onClick: (() -> Unit)? = null
+) {
+  ImportantCheckIndicator(
+    importantCheck = growthAbility,
+    imageAlpha = imageAlpha,
+    onClick = onClick,
+    bottomEnd = {
+      if (growthAbilityLevel > 0 || displayLevelZero) {
+        Image(imageFromResource(imagesByNumber[growthAbilityLevel]), Modifier.size(scaledSize(16.dp)))
       }
     }
   )
@@ -90,7 +109,7 @@ import androidx.compose.ui.unit.dp
       if (displayHintedIcon) {
         Image(
           imageFromResource(AmbientImportantCheckIconSet.current.icons.getValue(AnsemReport.Report1)),
-          Modifier.size(16.dp)
+          Modifier.size(scaledSize(16.dp))
         )
       }
     },
@@ -106,7 +125,7 @@ import androidx.compose.ui.unit.dp
   bottomEnd: @Composable (() -> Unit)? = null
 ) {
   Box(
-    Modifier.size(36.dp)
+    Modifier.size(scaledSize(36.dp))
       .let { modifier ->
         if (onClick == null) modifier else modifier.clickable { onClick() }
       }

@@ -52,6 +52,10 @@ Tracker window                | Broadcast window
 - Place items in the Garden of Assemblage location to indicate that they were items that were in the 3 GoA chests or
   items that you started the seed with. Can also use this as a place to put Second Chance and Once More if they were
   found on keyblades.
+- Click a growth ability (high jump, quick run, etc.) to mark it as collected in a location
+  - Growth abilities are not considered important checks, but are displayed in the location to indicate where you found
+    the ability
+  - Can click the growth ability again to mark the next level of the ability in the same or another location
 - Drive forms and torn pages placed in locations with a revealed hint will display an Ansem report icon indicating that
   form or page was hinted, making it easier to determine if all drive forms or torn pages have been hinted.
 
@@ -73,4 +77,3 @@ Tracker window                | Broadcast window
 #### To do
 
 - Drag and drop support
-- Remember window positions and sizes

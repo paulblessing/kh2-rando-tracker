@@ -28,7 +28,7 @@ import java.net.URI
       Surface(Modifier.fillMaxSize()) {
         ScrollableColumn(Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
           BasicText("Copyright © 2020 Paul Blessing")
-          Link(desktop, "https://github.com/paulblessing")
+          Link(desktop, "https://github.com/paulblessing/kh2-rando-tracker")
 
           Spacer(Modifier.height(16.dp))
 

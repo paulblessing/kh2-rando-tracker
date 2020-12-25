@@ -24,6 +24,14 @@ class TrackerState(
     ansemReportStates.associateByTo(result, AnsemReportState::ansemReport)
     driveFormStates.associateByTo(result, DriveFormState::driveForm)
     otherImportantCheckStates.associateByTo(result, OtherImportantCheckState::importantCheck)
+
+    // Safeguard against a saved state that doesn't have growth abilities included
+    for (growthAbility in GrowthAbility.values()) {
+      if (growthAbility !in result) {
+        result[growthAbility] = OtherImportantCheckState(growthAbility, consideredImportant = false)
+      }
+    }
+
     result
   }
 
@@ -198,6 +206,10 @@ class TrackerState(
 
       val otherImportantCheckStates = run {
         val importantCheckStates = mutableListOf<OtherImportantCheckState>()
+
+        GrowthAbility.values().mapTo(importantCheckStates) { growthAbility ->
+          OtherImportantCheckState(growthAbility, consideredImportant = false)
+        }
 
         run {
           val cureConsideredImportant = HintSetting.Cure in hintSettings

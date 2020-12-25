@@ -10,23 +10,6 @@ interface ImportantCheck {
 
   val id: Int
 
-  companion object {
-
-    val allImportantChecks: Set<ImportantCheck> = run {
-      mutableSetOf<ImportantCheck>().apply {
-        addAll(AnsemReport.values())
-        addAll(Magic.values())
-        addAll(DriveForm.values())
-        addAll(ImportantAbility.values())
-        addAll(TornPage.values())
-        addAll(Summon.values())
-        addAll(Proof.values())
-        add(PromiseCharm)
-      }
-    }
-
-  }
-
 }
 
 enum class AnsemReport(override val id: Int, val number: Int) : ImportantCheck {
@@ -66,7 +49,29 @@ enum class Magic(override val id: Int) : ImportantCheck {
   Reflect3(id = 242),
   Magnet1(id = 250),
   Magnet2(id = 251),
-  Magnet3(id = 252)
+  Magnet3(id = 252);
+
+  companion object {
+
+    val fires: Set<Magic>
+      get() = setOf(Fire1, Fire2, Fire3)
+
+    val blizzards: Set<Magic>
+      get() = setOf(Blizzard1, Blizzard2, Blizzard3)
+
+    val thunders: Set<Magic>
+      get() = setOf(Thunder1, Thunder2, Thunder3)
+
+    val cures: Set<Magic>
+      get() = setOf(Cure1, Cure2, Cure3)
+
+    val reflects: Set<Magic>
+      get() = setOf(Reflect1, Reflect2, Reflect3)
+
+    val magnets: Set<Magic>
+      get() = setOf(Magnet1, Magnet2, Magnet3)
+
+  }
 
 }
 
@@ -77,6 +82,50 @@ enum class DriveForm(override val id: Int) : ImportantCheck {
   LimitForm(id = 302),
   MasterForm(id = 303),
   FinalForm(id = 304)
+
+}
+
+enum class GrowthAbility(override val id: Int) : ImportantCheck {
+
+  HighJump1(id = 350),
+  HighJump2(id = 351),
+  HighJump3(id = 352),
+  HighJump4(id = 353),
+  QuickRun1(id = 360),
+  QuickRun2(id = 361),
+  QuickRun3(id = 362),
+  QuickRun4(id = 363),
+  DodgeRoll1(id = 370),
+  DodgeRoll2(id = 371),
+  DodgeRoll3(id = 372),
+  DodgeRoll4(id = 373),
+  AerialDodge1(id = 380),
+  AerialDodge2(id = 381),
+  AerialDodge3(id = 382),
+  AerialDodge4(id = 383),
+  Glide1(id = 390),
+  Glide2(id = 391),
+  Glide3(id = 392),
+  Glide4(id = 393);
+
+  companion object {
+
+    val highJumps: Set<GrowthAbility>
+      get() = setOf(HighJump1, HighJump2, HighJump3, HighJump4)
+
+    val quickRuns: Set<GrowthAbility>
+      get() = setOf(QuickRun1, QuickRun2, QuickRun3, QuickRun4)
+
+    val dodgeRolls: Set<GrowthAbility>
+      get() = setOf(DodgeRoll1, DodgeRoll2, DodgeRoll3, DodgeRoll4)
+
+    val aerialDodges: Set<GrowthAbility>
+      get() = setOf(AerialDodge1, AerialDodge2, AerialDodge3, AerialDodge4)
+
+    val glides: Set<GrowthAbility>
+      get() = setOf(Glide1, Glide2, Glide3, Glide4)
+
+  }
 
 }
 
