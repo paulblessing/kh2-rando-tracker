@@ -15,11 +15,11 @@ import androidx.compose.ui.graphics.imageFromResource
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 
-@Composable fun MainWindow(state: TrackerState) {
+@Composable fun MainWindow(state: TrackerState, growthAbilityMode: GrowthAbilityMode) {
   ScrollableColumn(verticalArrangement = Arrangement.SpaceEvenly) {
     FlowRow {
       for (locationState in state.importantCheckLocationStates.filter { it.enabled }) {
-        ImportantCheckLocationSection(locationState, state)
+        ImportantCheckLocationSection(locationState, state, growthAbilityMode = growthAbilityMode)
       }
     }
 
@@ -50,16 +50,25 @@ import androidx.compose.ui.unit.dp
     val cures = Magic.cures
     val reflects = Magic.reflects
     val magnets = Magic.magnets
-    AvailableCheckRow(GrowthAbility.values().toList() + cures + reflects + magnets, state)
 
-    AvailableCheckRow(
-      TornPage.values().toList() + Summon.values() + ImportantAbility.values() + PromiseCharm + Proof.values(),
-      state
-    )
+    if (growthAbilityMode == GrowthAbilityMode.Off) {
+      AvailableCheckRow(TornPage.values().toList() + cures + reflects + magnets, state)
+      AvailableCheckRow(Summon.values().toList() + ImportantAbility.values() + PromiseCharm + Proof.values(), state)
+    } else {
+      AvailableCheckRow(GrowthAbility.values().toList() + cures + reflects + magnets, state)
+      AvailableCheckRow(
+        TornPage.values().toList() + Summon.values() + ImportantAbility.values() + PromiseCharm + Proof.values(),
+        state
+      )
+    }
   }
 }
 
-@Composable fun ImportantCheckLocationSection(locationState: ImportantCheckLocationState, state: TrackerState) {
+@Composable fun ImportantCheckLocationSection(
+  locationState: ImportantCheckLocationState,
+  state: TrackerState,
+  growthAbilityMode: GrowthAbilityMode
+) {
   val location = locationState.location
   val activeLocation = location == state.activeLocation
   Box(Modifier.width(scaledSize(320.dp))) {
@@ -101,6 +110,11 @@ import androidx.compose.ui.unit.dp
           when (foundCheck) {
             is AnsemReport -> FoundAnsemReportIndicator(foundCheck, state)
             is DriveForm -> FoundDriveFormIndicator(foundCheck, state)
+            is GrowthAbility -> {
+              if (growthAbilityMode == GrowthAbilityMode.TrackedToLocation) {
+                FoundOtherImportantCheckIndicator(foundCheck, state)
+              }
+            }
             else -> FoundOtherImportantCheckIndicator(foundCheck, state)
           }
         }
@@ -144,10 +158,13 @@ import androidx.compose.ui.unit.dp
 
 @Composable private fun AvailableAnsemReportIndicator(ansemReport: AnsemReport, state: TrackerState) {
   val ansemReportState = state[ansemReport]
+  val found = state.importantCheckHasBeenFound(ansemReport)
   AnsemReportIndicator(
     ansemReport = ansemReport,
-    imageAlpha = if (state.importantCheckHasBeenFound(ansemReport)) 0.25f else 1.0f,
+    hintedLocation = ansemReportState.hintedLocation.takeIf { found },
+    imageAlpha = if (found) 0.25f else 1.0f,
     failedAttemptCount = ansemReportState.failedAttempts,
+    displayHintedIcon = ansemReportState.hinted,
     onClick = {
       state.attemptToAddImportantCheck(
         ansemReport,
@@ -244,6 +261,8 @@ import androidx.compose.ui.unit.dp
   val ansemReportState = state[ansemReport]
   AnsemReportIndicator(
     ansemReport,
+    hintedLocation = ansemReportState.hintedLocation,
+    displayHintedIcon = ansemReportState.hinted,
     onClick = { state.lastRevealedAnsemReport = ansemReportState }
   )
 }

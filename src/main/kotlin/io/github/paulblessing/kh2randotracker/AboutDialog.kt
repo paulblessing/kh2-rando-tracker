@@ -18,7 +18,7 @@ import androidx.compose.ui.window.Dialog
 import java.awt.Desktop
 import java.net.URI
 
-@Composable fun AboutDialog(onDismissRequest: () -> Unit) {
+@Composable fun AboutDialog(trackerVersion: String, onDismissRequest: () -> Unit) {
   val desktop = if (Desktop.isDesktopSupported()) Desktop.getDesktop() else null
   Dialog(
     onDismissRequest,
@@ -27,7 +27,8 @@ import java.net.URI
     MaterialTheme(colors = darkColors()) {
       Surface(Modifier.fillMaxSize()) {
         ScrollableColumn(Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
-          BasicText("Copyright © 2020 Paul Blessing")
+          BasicText("KH2 Randomizer Tracker $trackerVersion")
+          BasicText("Copyright © 2020-2021 Paul Blessing")
           Link(desktop, "https://github.com/paulblessing/kh2-rando-tracker")
 
           Spacer(Modifier.height(16.dp))

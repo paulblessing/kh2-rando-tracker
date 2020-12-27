@@ -19,6 +19,7 @@ import java.awt.Desktop
 import java.awt.datatransfer.DataFlavor
 import java.awt.image.BufferedImage
 import java.io.File
+import java.util.*
 import javax.imageio.ImageIO
 import javax.swing.SwingUtilities
 import javax.swing.TransferHandler
@@ -36,7 +37,23 @@ val AmbientIconScale = staticAmbientOf<Float> {
 }
 
 fun main() {
-  val savedState = SavedState.load()
+  val savedState = try {
+    SavedState.load()
+  } catch (e: Exception) {
+    null
+  }
+
+  val classLoader = TrackerState::class.java.classLoader
+  val trackerVersion = try {
+    classLoader.getResourceAsStream("build.properties").use { stream ->
+      val properties = Properties()
+      properties.load(stream)
+      properties.getProperty("tracker.version", "<Unknown>")
+    }
+  } catch (e: Exception) {
+    "<Unknown>"
+  }
+
   val trackerState = savedState?.trackerState
   val savedLocationIconSet = ImportantCheckLocationIconSet.byName(savedState?.importantCheckLocationIconSet)
   val savedCheckIconSet = ImportantCheckIconSet.byName(savedState?.importantCheckIconSet)
@@ -45,6 +62,7 @@ fun main() {
   SwingUtilities.invokeLater {
     val stateHolder = mutableStateOf(trackerState)
     val hintLoadingErrorHolder = mutableStateOf<Throwable?>(null)
+    var growthAbilityMode: GrowthAbilityMode by mutableStateOf(savedUiState.growthAbilityMode)
     var importantCheckLocationIconSet: ImportantCheckLocationIconSet by mutableStateOf(savedLocationIconSet)
     var importantCheckIconSet: ImportantCheckIconSet by mutableStateOf(savedCheckIconSet)
     var trackerWindowSize: SizeClass by mutableStateOf(savedUiState.trackerWindowSizeClass)
@@ -53,7 +71,7 @@ fun main() {
     var aboutDialogShowing: Boolean by mutableStateOf(false)
     var confirmResetDialogShowing: Boolean by mutableStateOf(false)
 
-    val dummy = MenuItem("-----", onClick = { })
+    val dummy = MenuItem("Version $trackerVersion", onClick = { })
     val reset = MenuItem("Reset", onClick = {
       confirmResetDialogShowing = true
     })
@@ -101,6 +119,7 @@ fun main() {
 
     val getUiState = {
       UiState(
+        growthAbilityMode = growthAbilityMode,
         trackerWindowSizeClass = trackerWindowSize,
         trackerWindowMetrics = WindowSizeAndPosition(
           x = trackerWindow.x,
@@ -147,13 +166,17 @@ fun main() {
               onSelectHintFile = { selectAndLoadHintFile(stateHolder, hintLoadingErrorHolder) }
             )
           } else {
-            MainWindow(state)
+            MainWindow(state, growthAbilityMode = growthAbilityMode)
           }
         }
       }
 
       if (settingsDialogShowing) {
         SettingsDialog(
+          growthAbilityMode = growthAbilityMode,
+          onGrowthAbilityModeSelected = { mode ->
+            growthAbilityMode = mode
+          },
           importantCheckLocationIconSet = importantCheckLocationIconSet.name,
           onImportantCheckLocationIconSetSelected = { iconSetName ->
             importantCheckLocationIconSet = ImportantCheckLocationIconSet.byName(iconSetName)
@@ -185,7 +208,7 @@ fun main() {
       }
 
       if (aboutDialogShowing) {
-        AboutDialog(onDismissRequest = { aboutDialogShowing = false })
+        AboutDialog(trackerVersion = trackerVersion, onDismissRequest = { aboutDialogShowing = false })
       }
 
       if (confirmResetDialogShowing) {
@@ -211,7 +234,7 @@ fun main() {
               onSelectHintFile = { selectAndLoadHintFile(stateHolder, hintLoadingErrorHolder) }
             )
           } else {
-            BroadcastWindow(state)
+            BroadcastWindow(state, growthAbilityMode = growthAbilityMode)
           }
         }
       }

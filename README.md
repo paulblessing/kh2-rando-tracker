@@ -56,6 +56,9 @@ Tracker window                | Broadcast window
   - Growth abilities are not considered important checks, but are displayed in the location to indicate where you found
     the ability
   - Can click the growth ability again to mark the next level of the ability in the same or another location
+  - Can turn growth ability tracking to "level only" mode in the options menu which will hide growth abilities from
+    their found locations
+  - Can turn growth ability tracking completely off if desired
 - Drive forms and torn pages placed in locations with a revealed hint will display an Ansem report icon indicating that
   form or page was hinted, making it easier to determine if all drive forms or torn pages have been hinted.
 

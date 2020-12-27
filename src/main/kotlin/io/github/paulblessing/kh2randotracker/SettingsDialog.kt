@@ -11,6 +11,8 @@ import androidx.compose.ui.window.DesktopDialogProperties
 import androidx.compose.ui.window.Dialog
 
 @Composable fun SettingsDialog(
+  growthAbilityMode: GrowthAbilityMode,
+  onGrowthAbilityModeSelected: (GrowthAbilityMode) -> Unit,
   importantCheckLocationIconSet: String,
   onImportantCheckLocationIconSetSelected: (String) -> Unit,
   importantCheckIconSet: String,
@@ -28,6 +30,8 @@ import androidx.compose.ui.window.Dialog
     MaterialTheme(colors = darkColors()) {
       Surface(Modifier.fillMaxSize()) {
         Column(Modifier.padding(16.dp)) {
+          GrowthAbilityModeSetting(growthAbilityMode, onGrowthAbilityModeSelected)
+          Spacer(Modifier.height(16.dp))
           IconSetSetting("Location icons", importantCheckLocationIconSet, onImportantCheckLocationIconSetSelected)
           Spacer(Modifier.height(16.dp))
           IconSetSetting("Item icons", importantCheckIconSet, onImportantCheckIconSetSelected)
@@ -38,6 +42,37 @@ import androidx.compose.ui.window.Dialog
         }
       }
     }
+  }
+}
+
+@Composable private fun GrowthAbilityModeSetting(
+  growthAbilityMode: GrowthAbilityMode,
+  onGrowthAbilityModeSelected: (GrowthAbilityMode) -> Unit
+) {
+  Text("Growth ability mode")
+  Spacer(Modifier.height(8.dp))
+  Row(verticalAlignment = Alignment.CenterVertically) {
+    RadioButton(
+      selected = growthAbilityMode == GrowthAbilityMode.TrackedToLocation,
+      onClick = { onGrowthAbilityModeSelected(GrowthAbilityMode.TrackedToLocation) }
+    )
+    Text("Tracked to location", style = MaterialTheme.typography.caption)
+
+    Spacer(Modifier.width(16.dp))
+
+    RadioButton(
+      selected = growthAbilityMode == GrowthAbilityMode.LevelOnly,
+      onClick = { onGrowthAbilityModeSelected(GrowthAbilityMode.LevelOnly) }
+    )
+    Text("Level only", style = MaterialTheme.typography.caption)
+
+    Spacer(Modifier.width(16.dp))
+
+    RadioButton(
+      selected = growthAbilityMode == GrowthAbilityMode.Off,
+      onClick = { onGrowthAbilityModeSelected(GrowthAbilityMode.Off) }
+    )
+    Text("Off", style = MaterialTheme.typography.caption)
   }
 }
 

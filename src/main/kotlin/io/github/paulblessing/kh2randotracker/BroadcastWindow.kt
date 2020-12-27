@@ -8,7 +8,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.imageFromResource
 import androidx.compose.ui.unit.dp
 
-@Composable fun BroadcastWindow(state: TrackerState) {
+@Composable fun BroadcastWindow(state: TrackerState, growthAbilityMode: GrowthAbilityMode) {
   Column(verticalArrangement = Arrangement.SpaceEvenly) {
     val shownLocationStates = state.importantCheckLocationStates.filter { it.location.broadcast && it.enabled }
     for (rowOfLocationStates in shownLocationStates.chunked(4)) {
@@ -22,7 +22,9 @@ import androidx.compose.ui.unit.dp
     CountSummariesRow(state)
     MagicRow(state)
     DriveFormRow(state)
-    GrowthAbilityRow(state)
+    if (growthAbilityMode != GrowthAbilityMode.Off) {
+      GrowthAbilityRow(state)
+    }
     SummonRow(state)
     ProofsAndOthersRow(state)
   }

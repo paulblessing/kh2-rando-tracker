@@ -30,5 +30,6 @@ class UiState(
     y = 200,
     width = DEFAULT_BROADCAST_WINDOW_WIDTH,
     height = DEFAULT_BROADCAST_WINDOW_HEIGHT
-  )
+  ),
+  val growthAbilityMode: GrowthAbilityMode = GrowthAbilityMode.TrackedToLocation
 )

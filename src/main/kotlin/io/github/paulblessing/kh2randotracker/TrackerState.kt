@@ -41,9 +41,9 @@ class TrackerState(
   @Transient
   val totalImportantChecksConsideredImportantCount: Int = run {
     var total = 0
-    total += ansemReportStates.count(AnsemReportState::consideredImportant)
-    total += driveFormStates.count(DriveFormState::consideredImportant)
-    total += otherImportantCheckStates.count(OtherImportantCheckState::consideredImportant)
+    total += ansemReportStates.count(ImportantCheckState::consideredImportant)
+    total += driveFormStates.count(ImportantCheckState::consideredImportant)
+    total += otherImportantCheckStates.count(ImportantCheckState::consideredImportant)
     total
   }
 

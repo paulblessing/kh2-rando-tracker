@@ -10,7 +10,7 @@ plugins {
 }
 
 group = "io.github.paulblessing"
-version = "1.0.4"
+version = "1.0.5"
 
 repositories {
   jcenter()
@@ -31,6 +31,16 @@ dependencies {
 java {
   sourceCompatibility = JavaVersion.VERSION_11
   targetCompatibility = JavaVersion.VERSION_11
+}
+
+tasks.withType<ProcessResources> {
+  doLast {
+    val resourcesDir = sourceSets.main.get().output.resourcesDir!!
+    resourcesDir.mkdirs()
+    val file = File(resourcesDir, "build.properties")
+    val ver = project.version
+    file.writeText("tracker.version=$ver")
+  }
 }
 
 tasks.withType<KotlinCompile> {

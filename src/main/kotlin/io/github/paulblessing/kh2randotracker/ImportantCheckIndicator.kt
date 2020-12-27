@@ -11,8 +11,10 @@ import androidx.compose.ui.unit.dp
 
 @Composable fun AnsemReportIndicator(
   ansemReport: AnsemReport,
+  hintedLocation: ImportantCheckLocation? = null,
   imageAlpha: Float = 1.0f,
   failedAttemptCount: Int = 0,
+  displayHintedIcon: Boolean = false,
   onClick: (() -> Unit)? = null
 ) {
   ImportantCheckIndicator(
@@ -20,8 +22,23 @@ import androidx.compose.ui.unit.dp
     imageAlpha = imageAlpha,
     onClick = onClick,
     topStart = {
-      Row(Modifier.height(scaledSize(16.dp))) {
-        repeat(failedAttemptCount) { Image(imageFromResource("images/FailX.png")) }
+      if (displayHintedIcon) {
+        Image(
+          imageFromResource(AmbientImportantCheckIconSet.current.icons.getValue(AnsemReport.Report1)),
+          Modifier.size(scaledSize(16.dp))
+        )
+      } else {
+        Row(Modifier.height(scaledSize(16.dp))) {
+          repeat(failedAttemptCount) { Image(imageFromResource("images/FailX.png")) }
+        }
+      }
+    },
+    topEnd = {
+      if (hintedLocation != null) {
+        Image(
+          imageFromResource(AmbientImportantCheckLocationIconSet.current.icons.getValue(hintedLocation)),
+          Modifier.size(scaledSize(16.dp))
+        )
       }
     },
     bottomEnd = {
@@ -122,6 +139,7 @@ import androidx.compose.ui.unit.dp
   onClick: (() -> Unit)? = null,
   onScrollWheel: ((adjustment: Int) -> Unit)? = null,
   topStart: @Composable (() -> Unit)? = null,
+  topEnd: @Composable (() -> Unit)? = null,
   bottomEnd: @Composable (() -> Unit)? = null
 ) {
   Box(
@@ -142,6 +160,9 @@ import androidx.compose.ui.unit.dp
     Image(imageFromResource(iconSet.icons.getValue(importantCheck)), Modifier.fillMaxSize(), alpha = imageAlpha)
     if (topStart != null) {
       Box(Modifier.align(Alignment.TopStart)) { topStart() }
+    }
+    if (topEnd != null) {
+      Box(Modifier.align(Alignment.TopEnd)) { topEnd() }
     }
     if (bottomEnd != null) {
       Box(Modifier.align(Alignment.BottomEnd)) { bottomEnd() }
