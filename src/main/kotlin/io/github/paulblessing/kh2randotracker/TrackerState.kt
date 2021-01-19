@@ -59,7 +59,8 @@ class TrackerState(
       for (foundImportantCheck in importantCheckLocationState.foundImportantChecks) {
         val importantCheckState = this[foundImportantCheck]
         importantCheckState.found = true
-        if (importantCheckLocationState.hintRevealed) {
+        val location = importantCheckLocationState.location
+        if (location == ImportantCheckLocation.GardenOfAssemblage || importantCheckLocationState.hintRevealed) {
           importantCheckState.hinted = true
         }
       }
@@ -137,10 +138,6 @@ class TrackerState(
       onDisallowed("no active location")
       return
     }
-    if (activeLocationState.foundImportantChecks.size >= 20) run {
-      onDisallowed("no space")
-      return
-    }
 
     val locationCheckResult = checkLocation(activeLocationState)
     if (locationCheckResult != null) {
@@ -151,7 +148,7 @@ class TrackerState(
     activeLocationState.foundImportantChecks += importantCheck
     val importantCheckState = this[importantCheck]
     importantCheckState.found = true
-    if (activeLocationState.hintRevealed) {
+    if (activeLocationState.location == ImportantCheckLocation.GardenOfAssemblage || activeLocationState.hintRevealed) {
       importantCheckState.hinted = true
     }
 

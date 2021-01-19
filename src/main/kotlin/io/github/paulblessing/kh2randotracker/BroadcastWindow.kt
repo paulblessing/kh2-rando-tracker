@@ -32,9 +32,21 @@ import androidx.compose.ui.unit.dp
 
 @Composable private fun CountSummariesRow(state: TrackerState) {
   val foundReports = AnsemReport.values().count { ansemReport -> state.importantCheckHasBeenFound(ansemReport) }
-  val foundPages = TornPage.values().count { tornPage -> state.importantCheckHasBeenFound(tornPage) }
+
+  var foundPages = 0
+  var hintedPages = 0
+  for (tornPage in TornPage.values()) {
+    val tornPageState = state[tornPage]
+    if (tornPageState.found) {
+      foundPages++
+    }
+    if (tornPageState.hinted) {
+      hintedPages++
+    }
+  }
+
   Row(
-    Modifier.height(36.dp).fillMaxWidth().padding(horizontal = 8.dp, vertical = 2.dp),
+    Modifier.height(scaledSize(36.dp)).fillMaxWidth().padding(horizontal = 8.dp, vertical = 2.dp),
     verticalAlignment = Alignment.CenterVertically,
     horizontalArrangement = Arrangement.SpaceBetween,
   ) {
@@ -44,7 +56,18 @@ import androidx.compose.ui.unit.dp
       ReportOrPageCounter(found = foundReports, total = 13)
     }
     Row(verticalAlignment = Alignment.CenterVertically) {
-      Image(imageFromResource(iconSet.icons.getValue(TornPage.TornPage1)))
+      Box {
+        Image(imageFromResource(iconSet.icons.getValue(TornPage.TornPage1)))
+        if (hintedPages > 0) {
+          Box(Modifier.height(scaledSize(16.dp)).align(Alignment.TopStart)) {
+            Image(imageFromResource(iconSet.icons.getValue(AnsemReport.Report1)))
+            Image(
+              imageFromResource(imagesByNumber[hintedPages]),
+              Modifier.size(scaledSize(10.dp)).align(Alignment.BottomEnd)
+            )
+          }
+        }
+      }
       ReportOrPageCounter(found = foundPages, total = 5)
     }
     ReportOrPageCounter(
@@ -134,7 +157,8 @@ import androidx.compose.ui.unit.dp
     driveForm = driveForm,
     driveFormLevel = driveFormState.driveFormLevel,
     displayLevelZero = driveAcquired,
-    imageAlpha = if (driveAcquired) 1.0f else 0.25f
+    imageAlpha = if (driveAcquired) 1.0f else 0.25f,
+    displayHintedIcon = driveFormState.hinted
   )
 }
 

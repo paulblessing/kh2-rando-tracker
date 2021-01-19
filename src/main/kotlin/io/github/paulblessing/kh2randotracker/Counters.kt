@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.imageFromResource
 import androidx.compose.ui.unit.dp
@@ -99,7 +100,7 @@ val imagesByNumber = listOf(
         else -> Image(imageFromResource(imagesByNumber[totalImportantChecks]))
       }
     } else {
-      Image(imageFromResource("images/QuestionMark.png"))
+      Image(imageFromResource("images/QuestionMark.png"), Modifier.alpha(0.25f))
     }
   }
 }
